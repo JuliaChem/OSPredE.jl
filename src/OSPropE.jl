@@ -13,7 +13,6 @@ module OSPropE
 
   # Load default database
   global databaseDIPPR = CSV.read(pathPUREDIPPR)
-  println(1)
 
   # Include the main file .fl
   include("mainGUI_OSPropE.jl")
