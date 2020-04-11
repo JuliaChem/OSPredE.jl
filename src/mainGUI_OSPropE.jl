@@ -5,6 +5,7 @@
 # CONACyT-SENER-Hidrocarburos
 
 using Gtk, Gtk.ShortNames, JLD, Suppressor, CSV, Mustache, Dates
+using MolecularGraph
 import DataFrames
 
 # Path to CSS Gtk-Style dataFile
@@ -83,6 +84,10 @@ function OSPropEGUI()
     set_gtk_property!(tb5, :label, "Tools")
     set_gtk_property!(tb5, :tooltip_markup, "Tools")
 
+    tb6 = ToolButton("gtk-about")
+    set_gtk_property!(tb6, :label, "Help")
+    set_gtk_property!(tb6, :tooltip_markup, "Help")
+
     # Toolbar
     newToolbar = Toolbar()
     set_gtk_property!(newToolbar, :height_request, (h*.75)*.09)
@@ -91,9 +96,8 @@ function OSPropEGUI()
     push!(newToolbar, tb2)
     push!(newToolbar, tb3)
     push!(newToolbar, tb5)
+    push!(newToolbar, tb6)
     push!(newToolbar, tb4)
-
-    println(newToolbar)
 
     gridToolbar = Grid()
     set_gtk_property!(gridToolbar, :column_homogeneous, true)
@@ -125,17 +129,53 @@ function OSPropEGUI()
     set_gtk_property!(gDraw, :margin_right, 20)
     set_gtk_property!(gDraw, :valign, 3)
     set_gtk_property!(gDraw, :halign, 3)
+    set_gtk_property!(gDraw, :column_spacing, 20)
+    set_gtk_property!(gDraw, :row_spacing, 20)
+
+    smilesEntry = Entry()
+    set_gtk_property!(smilesEntry, :width_request, round(w*.20))
+
+    imgSVG = Gtk.Image()
+
+    runsmiles = Button("Draw")
+    set_gtk_property!(runsmiles, :name, "runsmiles")
+    set_gtk_property!(runsmiles, :width_request, round(w*.08))
+    screen = Gtk.GAccessor.style_context(runsmiles)
+    push!(screen, StyleProvider(provider), 600)
+
+    signal_connect(runsmiles, :clicked) do widget
+        smilesString = get_gtk_property(smilesEntry, :text, String)
+
+        mol = smilestomol("O=CCCC=CC")
+        mol_svg = drawsvg(mol, Int(round(h*.45)), Int(round(h*.45)))
+        open("output0.svg", "w") do io
+                write(io, mol_svg)
+        end
+
+        set_gtk_property!(imgSVG, :file, "output0.svg")
+        Gtk.showall(winOSPropE)
+    end
+
+    smilesFrame = Frame()
+    set_gtk_property!(smilesFrame, :name, "smileFrame")
+    set_gtk_property!(smilesFrame, :height_request, round(h*.45))
+    screen = Gtk.GAccessor.style_context(smilesFrame)
+    push!(screen, StyleProvider(provider), 600)
 
 
+    gDraw[1, 1] = smilesEntry
+    gDraw[2, 1] = runsmiles
+    gDraw[1:2, 2] = smilesFrame
 
+    push!(smilesFrame, imgSVG)
     push!(nbFrame0, gDraw)
-    push!(nb, nbFrame0, "Drawing")
+    push!(nb, nbFrame0, "  Drawing  ")
 
     # Resuls
     nbFrame1 = Frame()
-    screen = Gtk.GAccessor.style_context(nbFrame0)
+    screen = Gtk.GAccessor.style_context(nbFrame1)
     push!(screen, StyleProvider(provider), 600)
-    push!(nb, nbFrame1, "Results")
+    push!(nb, nbFrame1, "  Results  ")
 
     gridToolbar[1, 2] = nb
 
@@ -165,5 +205,4 @@ function OSPropEGUI()
 
     Gtk.showall(winOSPropE)
     set_gtk_property!(winOSPropE, :visible, true)
-
 end

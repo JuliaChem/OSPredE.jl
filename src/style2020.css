@@ -19,8 +19,7 @@ button {
 }
 
 /* CSS Style for specific buttons*/
-button#newGBack, button#newGNext, button#newGExit, button#newGClose,
-button#closeAbout {
+button#runsmiles {
 	box-shadow:inset 0px 1px 0px 0px #54a3f7;
 	background:linear-gradient(to bottom, #007dc1 5%, #0061a7 100%);
 	background-color:#007dc1;
@@ -39,64 +38,10 @@ button#closeAbout {
 	border-bottom-right-radius: 6px;
 }
 
-/* CSS Style for generic buttons*/
-button#Separators, button#Columns, button#Reactors, button#Exchangers, button#Tanks {
-	box-shadow: 0px 10px 14px -7px #276873;
-	background:linear-gradient(to bottom, #599bb3 5%, #408c99 100%);
-	background-color:#599bb3;
-	border-radius:8px;
-	color:#ffffff;
-	font-size:15px;
-	font-weight:bold;
-	padding:13px 32px;
-	text-decoration:none;
-	text-shadow:0px 1px 0px #3d768a;
-}
-
-/* CSS Style for hover generic buttons*/
-button:hover {
-	background:linear-gradient(to bottom, #0061a7 5%, #007dc1 100%);
-	background-color:#0061a7;
-	border-radius:6px;
-	border:1px solid #54381e;
-	color:#ffffff;
-	font-family:Arial;
-	font-size:19px;
-	font-weight:bold;
-	padding:0px 0px;
-	text-decoration:none;
-	text-shadow:0px 1px 0px #4d3534;
-}
-
 /* CSS Style for hover specific buttons*/
-button:hover#newGBack, button:hover#newGNext, button:hover#newGExit,
-button:hover#newGClose, button:hover#closeAbout {
+button:hover#runsmiles {
 	background:linear-gradient(to bottom, #0061a7 5%, #007dc1 100%);
 	background-color:#0061a7;
-}
-
-/* CSS Style for hover specific buttons*/
-button:hover#Separators, button:hover#Columns, button:hover#Tanks,
-button:hover#Reactors, button:hover#Exchangers{
-	background:linear-gradient(to bottom, #0061a7 5%, #007dc1 100%);
-	background-color:#0061a7;
-}
-
-/* CSS Style for disabled specific buttons*/
-button:disabled#newGBack, button:disabled#newGNext, button:disabled#newGExit,
-button:disabled#newGClose {
-	box-shadow:inset 0px 1px 0px 0px #a6827e;
-	background:linear-gradient(to bottom, #7d5d3b 5%, #634b30 100%);
-	background-color:#7d5d3b;
-	border-radius:6px;
-	border:1px solid #54381e;
-	color:#ffffff;
-	font-family:Arial;
-	font-size:15px;
-	font-weight:bold;
-	padding:0px 0px;
-	text-decoration:none;
-	text-shadow:0px 1px 0px #4d3534;
 }
 
 /* CSS Style for windows*/
@@ -177,9 +122,10 @@ frame {
 	border-style: solid;
 }
 
-frame#frameLogging {
-	border-color: black;
-	border-width: 1px;
+frame#frameLogging, frame#smileFrame {
+	border-color: grey;
+	border-width: 0.5px;
+	background-color: white;
 	border-style: solid;
 }
 
@@ -187,9 +133,4 @@ scrolledwindow {
 	background-color: rgb(235, 235, 235);
 	border-color: gray;
 	border-width: 1px;
-}
-
-entry {
-	background-color: rgb(235, 235, 235);
-	border-color: gray;
 }
