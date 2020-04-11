@@ -1,0 +1,195 @@
+/* CSS Style for generic buttons*/
+button {
+	box-shadow:inset 0px 1px 0px 0px #54a3f7;
+	background:linear-gradient(to bottom, #007dc1 5%, #0061a7 100%);
+	background-color:#007dc1;
+	border-radius:6px;
+	border:1px solid #124d77;
+	color:#ffffff;
+	font-family:Arial;
+	font-size:19px;
+	font-weight:bold;
+	padding:6px 24px;
+	text-decoration:none;
+	text-shadow:0px 1px 0px #154682;
+	border-top-left-radius: 6px;
+	border-top-right-radius: 6px;
+	border-bottom-left-radius: 6px;
+	border-bottom-right-radius: 6px;
+}
+
+/* CSS Style for specific buttons*/
+button#newGBack, button#newGNext, button#newGExit, button#newGClose,
+button#closeAbout {
+	box-shadow:inset 0px 1px 0px 0px #54a3f7;
+	background:linear-gradient(to bottom, #007dc1 5%, #0061a7 100%);
+	background-color:#007dc1;
+	border-radius:6px;
+	border:1px solid #124d77;
+	color:#ffffff;
+	font-family:Arial;
+	font-size:15px;
+	font-weight:bold;
+	padding:0px 0px;
+	text-decoration:none;
+	text-shadow:0px 1px 0px #154682;
+	border-top-left-radius: 6px;
+	border-top-right-radius: 6px;
+	border-bottom-left-radius: 6px;
+	border-bottom-right-radius: 6px;
+}
+
+/* CSS Style for generic buttons*/
+button#Separators, button#Columns, button#Reactors, button#Exchangers, button#Tanks {
+	box-shadow: 0px 10px 14px -7px #276873;
+	background:linear-gradient(to bottom, #599bb3 5%, #408c99 100%);
+	background-color:#599bb3;
+	border-radius:8px;
+	color:#ffffff;
+	font-size:15px;
+	font-weight:bold;
+	padding:13px 32px;
+	text-decoration:none;
+	text-shadow:0px 1px 0px #3d768a;
+}
+
+/* CSS Style for hover generic buttons*/
+button:hover {
+	background:linear-gradient(to bottom, #0061a7 5%, #007dc1 100%);
+	background-color:#0061a7;
+	border-radius:6px;
+	border:1px solid #54381e;
+	color:#ffffff;
+	font-family:Arial;
+	font-size:19px;
+	font-weight:bold;
+	padding:0px 0px;
+	text-decoration:none;
+	text-shadow:0px 1px 0px #4d3534;
+}
+
+/* CSS Style for hover specific buttons*/
+button:hover#newGBack, button:hover#newGNext, button:hover#newGExit,
+button:hover#newGClose, button:hover#closeAbout {
+	background:linear-gradient(to bottom, #0061a7 5%, #007dc1 100%);
+	background-color:#0061a7;
+}
+
+/* CSS Style for hover specific buttons*/
+button:hover#Separators, button:hover#Columns, button:hover#Tanks,
+button:hover#Reactors, button:hover#Exchangers{
+	background:linear-gradient(to bottom, #0061a7 5%, #007dc1 100%);
+	background-color:#0061a7;
+}
+
+/* CSS Style for disabled specific buttons*/
+button:disabled#newGBack, button:disabled#newGNext, button:disabled#newGExit,
+button:disabled#newGClose {
+	box-shadow:inset 0px 1px 0px 0px #a6827e;
+	background:linear-gradient(to bottom, #7d5d3b 5%, #634b30 100%);
+	background-color:#7d5d3b;
+	border-radius:6px;
+	border:1px solid #54381e;
+	color:#ffffff;
+	font-family:Arial;
+	font-size:15px;
+	font-weight:bold;
+	padding:0px 0px;
+	text-decoration:none;
+	text-shadow:0px 1px 0px #4d3534;
+}
+
+/* CSS Style for windows*/
+window {
+	background-color: white;
+}
+
+/* CSS Style for labels*/
+label {
+	font: 12px Serif;
+	color: gray;
+}
+
+label#nameUser, label#simName, label#dirName, label#compName, label#dateName {
+	font: 14px Serif;
+	border: 1px solid gray;
+	color: black;
+}
+
+label#notesName {
+	font: 14px Serif;
+	border: 1px solid gray;
+	color: black;
+}
+
+/* CSS Style for notebook headers tabs*/
+notebook header tabs tab {
+	box-shadow: 0px 0px;
+	font-size: 15px;
+	font-weight: bold;
+	color: white;
+	background:linear-gradient(to bottom, #007dc1 5%, #0061a7 100%);
+	background-color:#007dc1;
+	border-width: 1px;
+	border-style: solid;
+	border-color: black;
+	border-top-left-radius: 6px;
+	border-top-right-radius: 0px;
+	border-bottom-left-radius: 6px;
+	border-bottom-right-radius: 0px;
+}
+
+/* CSS Style for notebook headers tabs after pressed*/
+notebook header tabs tab:checked {
+	font-size: 15px;
+	font-weight: bold;
+	color: white;
+	background:linear-gradient(to bottom, #d0451b 5%, #bc3315 100%);
+	background-color:#d0451b;
+	border-width: 1px;
+	border-top-left-radius: 6px;
+	border-top-right-radius: 0px;
+	border-bottom-left-radius: 6px;
+	border-bottom-right-radius: 0px;
+	border-right-width: 1px;
+	border-right-color: black;
+}
+
+/* CSS Style for notebook headers tabs on hover*/
+notebook header tabs tab:hover {
+	font-size: 15px;
+	font-weight: bold;
+	color: white;
+	background:linear-gradient(to bottom, #0061a7 5%, #007dc1 100%);
+	background-color:#0061a7;
+	border-width: 1px;
+	border-top-left-radius: 6px;
+	border-top-right-radius: 0px;
+	border-bottom-left-radius: 6px;
+	border-bottom-right-radius: 0px;
+}
+
+/* CSS Style for notebook frames in tabs*/
+frame {
+	border-color: gray;
+	background-color: white;
+	border-width: 2px;
+	border-style: solid;
+}
+
+frame#frameLogging {
+	border-color: black;
+	border-width: 1px;
+	border-style: solid;
+}
+
+scrolledwindow {
+	background-color: rgb(235, 235, 235);
+	border-color: gray;
+	border-width: 1px;
+}
+
+entry {
+	background-color: rgb(235, 235, 235);
+	border-color: gray;
+}

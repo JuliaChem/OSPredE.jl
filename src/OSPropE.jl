@@ -1,31 +1,20 @@
-using Gtk.ShortNames
-using MolecularGraph, DataFrames
+module OSPropE
+  # Function to call the GUI
+  export OSPropEGUI
 
-# Environmental variable to allow Windows decorations
-ENV["GTK_CSD"] = 0
+  using Gtk, Gtk.ShortNames, JLD, Suppressor, CSV, Mustache, Dates
+  import DataFrames
 
-win = Window("My First Gtk.jl Program", 300, 300)
-#set_gtk_property!(win, :window_position, 3)
-set_gtk_property!(win, :accept_focus, true)
+  # Path to CSS Gtk-Style dataFile
+  global style_file = joinpath(dirname(Base.source_path()), "style2020.css")
 
-open1 = Button("Open")
+  # General Settings
+  global pathPUREDIPPR = joinpath(dirname(Base.source_path()), "PUREDIPPR.csv")
 
-close1 = Button("Close")
+  # Load default database
+  global databaseDIPPR = CSV.read(pathPUREDIPPR)
+  println(1)
 
-f1 = Frame("1")
-
-gMain = Grid()
-
-g1 = Grid()
-
-g2 = Grid()
-
-g1[1,1] = open1
-g2[1,1] = close1
-gMain[1,1] = f1
-gMain[2,1] = g2
-
-push!(f1, g1)
-
-push!(win,gMain)
-Gtk.showall(win)
+  # Include the main file .fl
+  include("mainGUI_OSPropE.jl")
+end
