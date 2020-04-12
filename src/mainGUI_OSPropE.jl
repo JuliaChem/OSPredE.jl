@@ -4,7 +4,7 @@
 # Jímenez Gutierrez Arturo
 # CONACyT-SENER-Hidrocarburos
 
-using Gtk, Gtk.ShortNames, JLD, Suppressor, CSV, Mustache, Dates
+using Gtk, Gtk.ShortNames, JLD, Suppressor, CSV, Mustache, Dates, Rsvg, Cairo
 using MolecularGraph
 import DataFrames
 
@@ -133,7 +133,7 @@ function OSPropEGUI()
     set_gtk_property!(gDraw, :row_spacing, 20)
 
     smilesEntry = Entry()
-    set_gtk_property!(smilesEntry, :width_request, round(w*.20))
+    set_gtk_property!(smilesEntry, :width_request, round(w*.22))
 
     imgSVG = Gtk.Image()
 
@@ -148,11 +148,40 @@ function OSPropEGUI()
 
         mol = smilestomol("O=CCCC=CC")
         mol_svg = drawsvg(mol, Int(round(h*.45)), Int(round(h*.45)))
-        open("output0.svg", "w") do io
+
+        if Sys.iswindows()
+            open(joinpath(dirname(Base.source_path()), "src\\output0.svg"), "w") do io
                 write(io, mol_svg)
+            end
         end
 
-        set_gtk_property!(imgSVG, :file, "output0.svg")
+        if Sys.islinux()
+            open(joinpath(dirname(Base.source_path()), "src//output0.svg"), "w") do io
+                write(io, mol_svg)
+            end
+        end
+
+        if Sys.iswindows()
+            filename_in = joinpath(dirname(Base.source_path()), "src\\output0.svg")
+            filename_out = joinpath(dirname(Base.source_path()), "src\\output0.png")
+        end
+
+        if Sys.islinux()
+            filename_in = joinpath(dirname(Base.source_path()), "src//output0.svg")
+            filename_out = joinpath(dirname(Base.source_path()), "src//output0.png")
+        end
+
+
+        # Code needed to convert SVG to PNG
+        r = Rsvg.handle_new_from_file(filename_in)
+        d = Rsvg.handle_get_dimensions(r)
+        cs = Cairo.CairoImageSurface(d.width,d.height,Cairo.FORMAT_ARGB32)
+        c = Cairo.CairoContext(cs)
+        Rsvg.handle_render_cairo(c,r)
+        Cairo.write_to_png(cs,filename_out)
+
+        set_gtk_property!(imgSVG, :file, filename_out)
+
         Gtk.showall(winOSPropE)
     end
 
@@ -162,12 +191,13 @@ function OSPropEGUI()
     screen = Gtk.GAccessor.style_context(smilesFrame)
     push!(screen, StyleProvider(provider), 600)
 
+    push!(smilesFrame, imgSVG)
 
     gDraw[1, 1] = smilesEntry
     gDraw[2, 1] = runsmiles
     gDraw[1:2, 2] = smilesFrame
 
-    push!(smilesFrame, imgSVG)
+
     push!(nbFrame0, gDraw)
     push!(nb, nbFrame0, "  Drawing  ")
 
@@ -191,7 +221,7 @@ function OSPropEGUI()
     set_gtk_property!(gLabel, :margin_right, 20)
     set_gtk_property!(gLabel, :height_request, (h*.75)*.07)
 
-    newLabel = Label("Designed at Instituto Tecnológico de Celaya - 2020
+    newLabel = Label("Designed at Instituto Tecnológico de Celaya/México - 2020
     Support granted by the Conacyt-Secretaría de Energía-Hidrocarburos sectorial fund")
     Gtk.GAccessor.justify(newLabel, Gtk.GConstants.GtkJustification.CENTER)
     screen = Gtk.GAccessor.style_context(newLabel)
