@@ -145,6 +145,7 @@ function OSPropEGUI()
 
     signal_connect(runsmiles, :clicked) do widget
         smilesString = get_gtk_property(smilesEntry, :text, String)
+        println(smilesString)
 
         mol = smilestomol("O=CCCC=CC")
         mol_svg = drawsvg(mol, Int(round(h*.45)), Int(round(h*.45)))
