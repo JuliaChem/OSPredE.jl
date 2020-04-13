@@ -28,10 +28,12 @@ if Sys.islinux()
     global filename_out = joinpath(dirname(Base.source_path()), "img//molpng.png")
 end
 
+println(filename_in)
+
 ################################################################################
 # Load default database
 ################################################################################
-global databaseDIPPR = CSV.read(pathPUREDIPPR)
+@async global databaseDIPPR = CSV.read(pathPUREDIPPR)
 
 # Main function
 function OSPropEGUI()
@@ -44,7 +46,7 @@ function OSPropEGUI()
     ENV["GTK_CSD"] = 0
 
     # CSS style
-    global provider = CssProviderLeaf(filename = style_file)
+    @sync global provider = CssProviderLeaf(filename = style_file)
 
     # Measurement of screen size to allow compatibility to all screen devices
     global w, h = screen_size()
@@ -164,7 +166,7 @@ function OSPropEGUI()
     signal_connect(runsmiles, :clicked) do widget
         global filename_in
         global filename_out
-        
+
         smilesString = get_gtk_property(smilesEntry, :text, String)
 
         # Convert String to mol
