@@ -1,20 +1,43 @@
-# OSPropE main program.
+# OSPropE
 # Instituto Tecnológico de Celaya/TecNM - México 2020
 # Sánchez-Sánchez Kelvyn Baruc
-# Jímenez Gutierrez Arturo
+# Jímenez-Gutierrez Arturo
 # CONACyT-SENER-Hidrocarburos
 
 using Gtk, Gtk.ShortNames, JLD, Suppressor, CSV, Mustache, Dates, Rsvg, Cairo
-using MolecularGraph
-import DataFrames
+import DataFrames, MolecularGraph
+
+# Aliasing for shortname
+const MG = MolecularGraph
+const DF = DataFrames
 
 # Path to CSS Gtk-Style dataFile
 global style_file = joinpath(dirname(Base.source_path()), "style2020.css")
 
 # General Settings
-global pathPUREDIPPR = joinpath(dirname(Base.source_path()), "PUREDIPPR.csv")
+# Database path
+if Sys.iswindows()
+    global pathPUREDIPPR = joinpath(dirname(Base.source_path()), "database\\PUREDIPPR.csv")
+end
 
+if Sys.islinux()
+    global pathPUREDIPPR = joinpath(dirname(Base.source_path()), "database//PUREDIPPR.csv")
+end
+
+# Name to convert from svg to png
+if Sys.iswindows()
+    global filename_in = joinpath(dirname(Base.source_path()), "img\\molsvg.svg")
+    global filename_out = joinpath(dirname(Base.source_path()), "img\\molpng.png")
+end
+
+if Sys.islinux()
+    global filename_in = joinpath(dirname(Base.source_path()), "img//molsvg.svg")
+    global filename_out = joinpath(dirname(Base.source_path()), "img//molpng.png")
+end
+
+################################################################################
 # Load default database
+################################################################################
 global databaseDIPPR = CSV.read(pathPUREDIPPR)
 
 # Main function
@@ -29,7 +52,7 @@ function OSPropEGUI()
     global provider = CssProviderLeaf(filename = style_file)
 
     # Measurement of screen size to allow compatibility to all screen devices
-    w, h = screen_size()
+    global w, h = screen_size()
 
     ################################################################################
     # Main Win
@@ -146,31 +169,16 @@ function OSPropEGUI()
     signal_connect(runsmiles, :clicked) do widget
         smilesString = get_gtk_property(smilesEntry, :text, String)
 
-        mol = smilestomol(smilesString)
-        mol_svg = drawsvg(mol, Int(round(h*.45)), Int(round(h*.45)))
+        # Convert String to mol
+        mol = MG.smilestomol(smilesString)
 
-        if Sys.iswindows()
-            open(joinpath(dirname(Base.source_path()), "src\\output0.svg"), "w") do io
-                write(io, mol_svg)
-            end
+        # Convert mol to a string of svg format
+        mol_svg = MG.drawsvg(mol, Int(round(h*.45)), Int(round(h*.45)))
+
+        # Export svg file
+        open(filename_in, "w") do io
+            write(io, mol_svg)
         end
-
-        if Sys.islinux()
-            open(joinpath(dirname(Base.source_path()), "src//output0.svg"), "w") do io
-                write(io, mol_svg)
-            end
-        end
-
-        if Sys.iswindows()
-            filename_in = joinpath(dirname(Base.source_path()), "src\\output0.svg")
-            filename_out = joinpath(dirname(Base.source_path()), "src\\output0.png")
-        end
-
-        if Sys.islinux()
-            filename_in = joinpath(dirname(Base.source_path()), "src//output0.svg")
-            filename_out = joinpath(dirname(Base.source_path()), "src//output0.png")
-        end
-
 
         # Code needed to convert SVG to PNG
         r = Rsvg.handle_new_from_file(filename_in)
@@ -180,6 +188,7 @@ function OSPropEGUI()
         Rsvg.handle_render_cairo(c,r)
         Cairo.write_to_png(cs,filename_out)
 
+        # Assing png file to Gtk.Image
         set_gtk_property!(imgSVG, :file, filename_out)
 
         Gtk.showall(winOSPropE)
