@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+ xmlns:xlink="http://www.w3.org/1999/xlink"
+ version="1.2" baseProfile="tiny"
+ text-rendering="geometricPrecision"
+ preserveAspectRatio="xMidYMid meet"
+ font-weight="normal"
+ font-family="Helvetica"
+ width="486" height="486"
+ viewBox="0 0 241.87 75.11">
+<rect x="0" y="0" width="241.87" height="75.11"
+ fill="rgb(255, 255, 255)" opacity="0.0"/>
+<line x1="55.99" y1="30.00" x2="30.00" y2="44.98" stroke="rgb(0, 0, 0)" /><line x1="133.92" y1="45.07" x2="107.95" y2="30.04" stroke="rgb(0, 0, 0)" /><line x1="185.88" y1="45.11" x2="159.91" y2="30.08" stroke="rgb(0, 0, 0)" /><line x1="159.91" y1="30.08" x2="133.92" y2="45.07" stroke="rgb(0, 0, 0)" /><line x1="107.95" y1="30.04" x2="81.96" y2="45.02" stroke="rgb(0, 0, 0)" /><line x1="81.96" y1="45.02" x2="55.99" y2="30.00" stroke="rgb(0, 0, 0)" /><line x1="211.87" y1="30.13" x2="185.88" y2="45.11" stroke="rgb(0, 0, 0)" /></svg>
