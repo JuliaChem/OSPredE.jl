@@ -37,6 +37,8 @@ global databaseDIPPR = CSV.read(pathPUREDIPPR)
 function OSPropEGUI()
     # Suppress warnings
     #@suppress begin
+    global filename_in
+    global filename_out
 
     # Environmental variable to allow Windows decorations
     ENV["GTK_CSD"] = 0
@@ -160,6 +162,9 @@ function OSPropEGUI()
     push!(screen, StyleProvider(provider), 600)
 
     signal_connect(runsmiles, :clicked) do widget
+        global filename_in
+        global filename_out
+        
         smilesString = get_gtk_property(smilesEntry, :text, String)
 
         # Convert String to mol
