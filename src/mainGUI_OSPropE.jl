@@ -28,8 +28,6 @@ if Sys.islinux()
     global filename_out = joinpath(dirname(Base.source_path()), "img/molpng.png")
 end
 
-println(filename_in)
-
 ################################################################################
 # Load default database
 ################################################################################
