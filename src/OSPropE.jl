@@ -4,9 +4,15 @@ module OSPropE
 
   if Sys.islinux()
     pkgpath = joinpath(dirname(Base.source_path()))
-    ;chmod +rwx $pkgpath
+
+    mycommand = `chmod 777 $(pkgpath)`
+
+    run(mycommand)
   end
 
   # Include the main file .fl
   include("mainGUI_OSPropE.jl")
 end
+
+
+;ls
