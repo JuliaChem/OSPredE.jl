@@ -18,19 +18,12 @@ global style_file = joinpath(dirname(Base.source_path()), "style2020.css")
 # Database path
 if Sys.iswindows()
     global pathPUREDIPPR = joinpath(dirname(Base.source_path()), "database\\PUREDIPPR.csv")
-end
-
-if Sys.islinux()
-    global pathPUREDIPPR = joinpath(dirname(Base.source_path()), "database//PUREDIPPR.csv")
-end
-
-# Name to convert from svg to png
-if Sys.iswindows()
     global filename_in = joinpath(dirname(Base.source_path()), "img\\molsvg.svg")
     global filename_out = joinpath(dirname(Base.source_path()), "img\\molpng.png")
 end
 
 if Sys.islinux()
+    global pathPUREDIPPR = joinpath(dirname(Base.source_path()), "database//PUREDIPPR.csv")
     global filename_in = joinpath(dirname(Base.source_path()), "img//molsvg.svg")
     global filename_out = joinpath(dirname(Base.source_path()), "img//molpng.png")
 end
