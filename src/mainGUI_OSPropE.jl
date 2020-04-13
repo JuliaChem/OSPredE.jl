@@ -36,12 +36,13 @@ if Sys.islinux()
 
     # Delete image file to avoid problems (linux)
     imgpath = joinpath(dirname(Base.source_path()),"img")
-    
+
     try
         mkdir(imgpath)
     catch
         Nothing
-    endend
+    end
+end
 
 ################################################################################
 # Load default database
