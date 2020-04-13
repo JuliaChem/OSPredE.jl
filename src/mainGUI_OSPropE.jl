@@ -23,9 +23,9 @@ if Sys.iswindows()
 end
 
 if Sys.islinux()
-    global pathPUREDIPPR = joinpath(dirname(Base.source_path()), "database//PUREDIPPR.csv")
-    global filename_in = joinpath(dirname(Base.source_path()), "img//molsvg.svg")
-    global filename_out = joinpath(dirname(Base.source_path()), "img//molpng.png")
+    global pathPUREDIPPR = joinpath(dirname(Base.source_path()), "database/PUREDIPPR.csv")
+    global filename_in = joinpath(dirname(Base.source_path()), "img/molsvg.svg")
+    global filename_out = joinpath(dirname(Base.source_path()), "img/molpng.png")
 end
 
 println(filename_in)
