@@ -20,6 +20,13 @@ if Sys.iswindows()
     global pathPUREDIPPR = joinpath(dirname(Base.source_path()), "database\\PUREDIPPR.csv")
     global filename_in = joinpath(dirname(Base.source_path()), "img\\molsvg.svg")
     global filename_out = joinpath(dirname(Base.source_path()), "img\\molpng.png")
+    imgpath = joinpath(dirname(Base.source_path()),"img")
+
+    try
+        mkdir(imgpath)
+    catch
+        Nothing
+    end
 end
 
 if Sys.islinux()
@@ -29,10 +36,12 @@ if Sys.islinux()
 
     # Delete image file to avoid problems (linux)
     imgpath = joinpath(dirname(Base.source_path()),"img")
-    println(imgpath)
-    rm(imgpath, recursive=true)
-    mkdir(imgpath)
-end
+    
+    try
+        mkdir(imgpath)
+    catch
+        Nothing
+    endend
 
 ################################################################################
 # Load default database
