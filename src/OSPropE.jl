@@ -4,7 +4,7 @@ module OSPropE
 
   if Sys.islinux()
     pkgpath = joinpath(dirname(Base.source_path()))
-    ;chmod +rwxc $pkgpath
+    ;chmod +rwx $pkgpath
   end
 
   # Include the main file .fl
