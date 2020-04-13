@@ -3,7 +3,8 @@ module OSPropE
   export OSPropEGUI
 
   if Sys.islinux()
-    pkgpath = joinpath(dirname(Base.source_path()))
+    pkgpath = joinpath(dirname(Base.source_path()),"img")
+    println(pkgpath)
 
     mycommand = `chmod 777 $(pkgpath)`
 
@@ -13,6 +14,3 @@ module OSPropE
   # Include the main file .fl
   include("mainGUI_OSPropE.jl")
 end
-
-
-;ls
