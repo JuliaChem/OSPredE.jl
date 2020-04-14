@@ -26,6 +26,7 @@ if Sys.iswindows()
     imgpath = joinpath(dirname(Base.source_path()), "img")
 
     try
+        rm(imgpath, recursive = true)
         mkdir(imgpath)
     catch
         Nothing
@@ -43,6 +44,7 @@ if Sys.islinux()
     imgpath = joinpath(dirname(Base.source_path()), "img")
 
     try
+        rm(imgpath, recursive = true)
         mkdir(imgpath)
     catch
         Nothing
