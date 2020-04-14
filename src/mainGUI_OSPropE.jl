@@ -32,6 +32,11 @@ if Sys.iswindows()
 
     try
         rm(imgpath, recursive = true)
+    catch
+        Nothing
+    end
+
+    try
         mkdir(imgpath)
     catch
         Nothing
@@ -41,20 +46,24 @@ end
 if Sys.islinux()
     global pathPUREDIPPR =
         joinpath(dirname(Base.source_path()), "database/PUREDIPPR.csv")
-    global filename_in =
-    joinpath(dirname(Base.source_path()), "img/molsvg.svg")
+    global filename_in = joinpath(dirname(Base.source_path()), "img/molsvg.svg")
     global filename_out =
         joinpath(dirname(Base.source_path()), "img/molpng.png")
     global filename_in2 =
-    joinpath(dirname(Base.source_path()), "img/molsvg2.svg")
+        joinpath(dirname(Base.source_path()), "img/molsvg2.svg")
     global filename_out2 =
-            joinpath(dirname(Base.source_path()), "img/molpng2.png")
+        joinpath(dirname(Base.source_path()), "img/molpng2.png")
 
     # Delete image file to avoid problems (linux)
     imgpath = joinpath(dirname(Base.source_path()), "img")
 
     try
         rm(imgpath, recursive = true)
+    catch
+        Nothing
+    end
+
+    try
         mkdir(imgpath)
     catch
         Nothing
@@ -138,12 +147,15 @@ function OSPropEGUI()
     set_gtk_property!(tb6, :tooltip_markup, "Compute properties")
     set_gtk_property!(tb6, :sensitive, false)
     signal_connect(tb6, :clicked) do widget
-        global mol
+        global mol, filename_out2, filename_in2, listFG
+
         try
+            global listFG
             canvas = MG.SvgCanvas()
             MG.draw2d!(canvas, mol)
             MG.drawatomindex!(canvas, mol)
-            mol_svg2 = MG.tosvg(canvas, 400, 400)
+            mol_svg2 =
+                MG.tosvg(canvas, Int(round(h * 0.28)), Int(round(h * 0.28)))
 
             # Export svg file
             open(filename_in2, "w") do io
@@ -158,6 +170,33 @@ function OSPropEGUI()
             Rsvg.handle_render_cairo(c, r)
             Cairo.write_to_png(cs, filename_out2)
 
+            set_gtk_property!(imgAtomIndex, :file, filename_out2)
+            Gtk.Showall(winOSPropE)
+
+            fg = MG.functionalgroupgraph(mol)
+            global funcgroups =
+                DF.DataFrame(Group = String[], Counts = Int[], Sets = String[])
+
+            for (term, components) in fg.componentmap
+                nodes = [sort(collect(comp)) for comp in components]
+                push!(
+                    funcgroups,
+                    (string(term), length(collect(nodes)), string(nodes...)),
+                )
+            end
+
+            println(1)
+            for i = 1:size(funcgroups)[1]
+                println(i)
+                push!(
+                    listFG,
+                    (
+                     funcgroups[i, 1],
+                     funcgroups[i, 2],
+                     funcgroups[i, 3],
+                    ),
+                )
+            end
         catch
             Nothing
         end
@@ -277,13 +316,13 @@ function OSPropEGUI()
     set_gtk_property!(doublebond, :width_request, round(w * 0.078))
     signal_connect(doublebond, :clicked) do widget
         smiletext = get_gtk_property(smilesEntry, :text, String)
-        set_gtk_property!(smilesEntry, :text, string(smiletext,"="))
+        set_gtk_property!(smilesEntry, :text, string(smiletext, "="))
     end
 
     triplebond = Button("≡")
     signal_connect(triplebond, :clicked) do widget
         smiletext = get_gtk_property(smilesEntry, :text, String)
-        set_gtk_property!(smilesEntry, :text, string(smiletext,"#"))
+        set_gtk_property!(smilesEntry, :text, string(smiletext, "#"))
     end
 
     alkane = Button("C-C")
@@ -292,7 +331,7 @@ function OSPropEGUI()
     ring = Button("O")
     signal_connect(ring, :clicked) do widget
         smiletext = get_gtk_property(smilesEntry, :text, String)
-        set_gtk_property!(smilesEntry, :text, string(smiletext,"C1CCCCC1"))
+        set_gtk_property!(smilesEntry, :text, string(smiletext, "C1CCCCC1"))
     end
 
     clear = Button("Clear")
@@ -361,27 +400,64 @@ function OSPropEGUI()
     set_gtk_property!(gSumm, :column_spacing, 20)
     set_gtk_property!(gSumm, :row_spacing, 20)
 
-    molFrame = Frame()
+    molFrame = Frame("Molecule")
+    set_gtk_property!(molFrame, :label_xalign, 0.50)
     set_gtk_property!(molFrame, :height_request, round(h * 0.28))
     set_gtk_property!(molFrame, :width_request, round(h * 0.32))
     screen = Gtk.GAccessor.style_context(molFrame)
     push!(screen, StyleProvider(provider), 600)
 
-    fgFrame = Frame()
+    imgAtomIndex = Gtk.Image()
+
+    push!(molFrame, imgAtomIndex)
+
+    global fgFrame = Frame("Functional Groups")
+    set_gtk_property!(fgFrame, :label_xalign, 0.50)
     set_gtk_property!(fgFrame, :height_request, round(h * 0.28))
     set_gtk_property!(fgFrame, :width_request, round(h * 0.32))
     screen = Gtk.GAccessor.style_context(fgFrame)
     push!(screen, StyleProvider(provider), 600)
 
-    propFrame = Frame()
+    # GtkListStore where the data is actually saved
+    global listFG = ListStore(
+        String,
+        Float64,
+        String
+    )
+
+    # Gtk TreeView to show the graphical element
+    global viewFG = TreeView(TreeModel(listFG))
+    set_gtk_property!(viewFG, :enable_grid_lines, 3)
+    set_gtk_property!(viewFG, :enable_search, true)
+
+    # Window that allow scroll the TreeView
+    scrollFG = ScrolledWindow(viewFG)
+    #set_gtk_property!(scrollFG, :width_request, 750)
+    #set_gtk_property!(scrollFG, :height_request, 250)
+    selection1 = Gtk.GAccessor.selection(viewFG)
+
+    # Column definitions
+    cTxt1 = CellRendererText()
+
+    c11 = TreeViewColumn("FG", cTxt1, Dict([("text", 0)]))
+    c12 = TreeViewColumn("Count", cTxt1, Dict([("text", 1)]))
+    c13 = TreeViewColumn("Index", cTxt1, Dict([("text", 2)]))
+
+    # Add column to TreeView
+    push!(viewFG, c11, c12, c13)
+
+    push!(fgFrame, scrollFG)
+
+    propFrame = Frame("Properties Estimated")
+    set_gtk_property!(propFrame, :label_xalign, 0.50)
     set_gtk_property!(propFrame, :height_request, round(h * 0.20))
     set_gtk_property!(propFrame, :width_request, round(h * 0.32))
     screen = Gtk.GAccessor.style_context(propFrame)
     push!(screen, StyleProvider(provider), 600)
 
-    gSumm[1,1] = molFrame
-    gSumm[2,1] = fgFrame
-    gSumm[1:2,2] = propFrame
+    gSumm[1, 1] = molFrame
+    gSumm[2, 1] = fgFrame
+    gSumm[1:2, 2] = propFrame
 
     push!(nbResFrame0, gSumm)
 
