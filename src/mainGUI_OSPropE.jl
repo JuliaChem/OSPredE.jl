@@ -24,6 +24,11 @@ if Sys.iswindows()
     global filename_out =
         joinpath(dirname(Base.source_path()), "img\\molpng.png")
     imgpath = joinpath(dirname(Base.source_path()), "img")
+    global filename_in2 =
+        joinpath(dirname(Base.source_path()), "img\\molsvg2.svg")
+    global filename_out2 =
+        joinpath(dirname(Base.source_path()), "img\\molpng2.png")
+    imgpath = joinpath(dirname(Base.source_path()), "img")
 
     try
         rm(imgpath, recursive = true)
@@ -36,9 +41,14 @@ end
 if Sys.islinux()
     global pathPUREDIPPR =
         joinpath(dirname(Base.source_path()), "database/PUREDIPPR.csv")
-    global filename_in = joinpath(dirname(Base.source_path()), "img/molsvg.svg")
+    global filename_in =
+    joinpath(dirname(Base.source_path()), "img/molsvg.svg")
     global filename_out =
         joinpath(dirname(Base.source_path()), "img/molpng.png")
+    global filename_in2 =
+    joinpath(dirname(Base.source_path()), "img/molsvg2.svg")
+    global filename_out2 =
+            joinpath(dirname(Base.source_path()), "img/molpng2.png")
 
     # Delete image file to avoid problems (linux)
     imgpath = joinpath(dirname(Base.source_path()), "img")
@@ -128,6 +138,29 @@ function OSPropEGUI()
     set_gtk_property!(tb6, :tooltip_markup, "Compute properties")
     set_gtk_property!(tb6, :sensitive, false)
     signal_connect(tb6, :clicked) do widget
+        global mol
+        try
+            canvas = MG.SvgCanvas()
+            MG.draw2d!(canvas, mol)
+            MG.drawatomindex!(canvas, mol)
+            mol_svg2 = MG.tosvg(canvas, 400, 400)
+
+            # Export svg file
+            open(filename_in2, "w") do io
+                write(io, mol_svg2)
+            end
+
+            # Code needed to convert SVG to PNG
+            r = Rsvg.handle_new_from_file(filename_in2)
+            d = Rsvg.handle_get_dimensions(r)
+            cs = Cairo.CairoImageSurface(d.width, d.height, Cairo.FORMAT_ARGB32)
+            c = Cairo.CairoContext(cs)
+            Rsvg.handle_render_cairo(c, r)
+            Cairo.write_to_png(cs, filename_out2)
+
+        catch
+            Nothing
+        end
         set_gtk_property!(nb, :page, 1)
     end
 
@@ -199,7 +232,7 @@ function OSPropEGUI()
             smilesString = get_gtk_property(smilesEntry, :text, String)
 
             # Convert String to mol
-            mol = MG.smilestomol(smilesString)
+            global mol = MG.smilestomol(smilesString)
 
             # Convert mol to a string of svg format
             mol_svg =
@@ -313,14 +346,51 @@ function OSPropEGUI()
     push!(screen, StyleProvider(provider), 600)
     #set_gtk_property!(nbRes, :height_request, h*.75 - (h*.75)*0.09 - (h*.75)*0.07)
 
+    # Summary
     nbResFrame0 = Frame()
     screen = Gtk.GAccessor.style_context(nbResFrame0)
     push!(screen, StyleProvider(provider), 600)
 
+    gSumm = Grid()
+    set_gtk_property!(gSumm, :margin_top, 20)
+    set_gtk_property!(gSumm, :margin_bottom, 20)
+    set_gtk_property!(gSumm, :margin_left, 20)
+    set_gtk_property!(gSumm, :margin_right, 20)
+    set_gtk_property!(gSumm, :valign, 3)
+    set_gtk_property!(gSumm, :halign, 3)
+    set_gtk_property!(gSumm, :column_spacing, 20)
+    set_gtk_property!(gSumm, :row_spacing, 20)
+
+    molFrame = Frame()
+    set_gtk_property!(molFrame, :height_request, round(h * 0.28))
+    set_gtk_property!(molFrame, :width_request, round(h * 0.32))
+    screen = Gtk.GAccessor.style_context(molFrame)
+    push!(screen, StyleProvider(provider), 600)
+
+    fgFrame = Frame()
+    set_gtk_property!(fgFrame, :height_request, round(h * 0.28))
+    set_gtk_property!(fgFrame, :width_request, round(h * 0.32))
+    screen = Gtk.GAccessor.style_context(fgFrame)
+    push!(screen, StyleProvider(provider), 600)
+
+    propFrame = Frame()
+    set_gtk_property!(propFrame, :height_request, round(h * 0.20))
+    set_gtk_property!(propFrame, :width_request, round(h * 0.32))
+    screen = Gtk.GAccessor.style_context(propFrame)
+    push!(screen, StyleProvider(provider), 600)
+
+    gSumm[1,1] = molFrame
+    gSumm[2,1] = fgFrame
+    gSumm[1:2,2] = propFrame
+
+    push!(nbResFrame0, gSumm)
+
+    # Marrero & Gani
     nbResFrame1 = Frame()
     screen = Gtk.GAccessor.style_context(nbResFrame1)
     push!(screen, StyleProvider(provider), 600)
 
+    # Sánchez & Jímenez
     nbResFrame2 = Frame()
     screen = Gtk.GAccessor.style_context(nbResFrame2)
     push!(screen, StyleProvider(provider), 600)
