@@ -171,8 +171,8 @@ function OSPropEGUI()
             Cairo.write_to_png(cs, filename_out2)
 
             set_gtk_property!(imgAtomIndex, :file, filename_out2)
-            Gtk.Showall(winOSPropE)
 
+            # Functional Groups Analysis
             fg = MG.functionalgroupgraph(mol)
             global funcgroups =
                 DF.DataFrame(Group = String[], Counts = Int[], Sets = String[])
@@ -185,7 +185,6 @@ function OSPropEGUI()
                 )
             end
 
-            println(1)
             for i = 1:size(funcgroups)[1]
                 println(i)
                 push!(
