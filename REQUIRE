@@ -8,4 +8,4 @@ Dates
 DataFrames
 Rsvg
 Cairo
-MolecularGraph
+https://github.com/JuliaChem/MolecularGraph.jl

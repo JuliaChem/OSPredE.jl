@@ -108,10 +108,12 @@ function OSPropEGUI()
     set_gtk_property!(tb1, :label, "New")
     set_gtk_property!(tb1, :tooltip_markup, "New analysis")
     signal_connect(tb1, :clicked) do widget
-        empty!(imgSVG)
         set_gtk_property!(smilesEntry, :text, "")
         set_gtk_property!(tb6, :sensitive, false)
-
+        empty!(listFG)
+        empty!(imgSVG)
+        empty!(imgAtomIndex)
+        set_gtk_property!(nb, :page, 0)
     end
 
     tb2 = ToolButton("gtk-floppy")
@@ -186,7 +188,6 @@ function OSPropEGUI()
             end
 
             for i = 1:size(funcgroups)[1]
-                println(i)
                 push!(
                     listFG,
                     (
@@ -201,7 +202,6 @@ function OSPropEGUI()
         end
         set_gtk_property!(nb, :page, 1)
     end
-
 
     # Toolbar
     newToolbar = Toolbar()
