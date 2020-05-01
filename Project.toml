@@ -1,0 +1,14 @@
+name = "OSPropE"
+uuid = "f64d7009-1484-582f-ba7b-92ab9eb13615"
+
+[deps]
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
+Cairo = "159f3aea-2a34-519c-b102-8c37f9878175"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
+Gtk = "4c0ca9eb-093a-5379-98c5-f87ac0bbbf44"
+JLD = "4138dd39-2aa7-5051-a626-17a0bb65d9c8"
+Mustache = "ffc61752-8dc7-55ee-8c37-f3e9cdd09e70"
+Rsvg = "c4c386cf-5103-5370-be45-f3a111cca3b8"
+Suppressor = "fd094767-a336-5f1f-9728-57cf17d0bbfb"
+"https://github.com/JuliaChem/MolecularGraph.jl" = "6775356f-57d0-5c7c-a01f-23024c39038e"
