@@ -104,7 +104,14 @@ function OSPropEGUI()
     # Toolbar
     ################################################################################
     # Menu Icons
-    tb1 = ToolButton("gtk-new")
+    tb1 = ToolButton("")
+    itb1 = Image()
+    if Sys.islinux()
+        set_gtk_property!(itb1, :file, "icons\\icon_new.ico")
+    else
+        set_gtk_property!(itb1, :file, "icons/icon_new.ico")
+    end
+    set_gtk_property!(tb1, :icon_widget, itb1)
     set_gtk_property!(tb1, :label, "New")
     set_gtk_property!(tb1, :tooltip_markup, "New analysis")
     signal_connect(tb1, :clicked) do widget
@@ -116,13 +123,27 @@ function OSPropEGUI()
         set_gtk_property!(nb, :page, 0)
     end
 
-    tb2 = ToolButton("gtk-floppy")
+    tb2 = ToolButton("")
+    itb2 = Image()
+    if Sys.islinux()
+        set_gtk_property!(itb2, :file, "icons\\icon_pdf.ico")
+    else
+        set_gtk_property!(itb2, :file, "icons/icon_pdf.ico")
+    end
+    set_gtk_property!(tb2, :icon_widget, itb2)
     set_gtk_property!(tb2, :label, "Export")
     set_gtk_property!(tb2, :tooltip_markup, "Export to .pdf")
     set_gtk_property!(tb2, :sensitive, false)
 
     # Close toolbar
-    tb3 = ToolButton("gtk-close")
+    tb3 = ToolButton("")
+    itb3 = Image()
+    if Sys.islinux()
+        set_gtk_property!(itb3, :file, "icons\\icon_close.ico")
+    else
+        set_gtk_property!(itb3, :file, "icons/icon_close.ico")
+    end
+    set_gtk_property!(tb3, :icon_widget, itb3)
     set_gtk_property!(tb3, :label, "Close")
     set_gtk_property!(tb3, :tooltip_markup, "Close")
 
@@ -136,11 +157,25 @@ function OSPropEGUI()
         end
     end
 
-    tb4 = ToolButton("gtk-preferences")
+    tb4 = ToolButton("")
+    itb4 = Image()
+    if Sys.islinux()
+        set_gtk_property!(itb4, :file, "icons\\icon_settings.ico")
+    else
+        set_gtk_property!(itb4, :file, "icons/icon_settings.ico")
+    end
+    set_gtk_property!(tb4, :icon_widget, itb4)
     set_gtk_property!(tb4, :label, "Tools")
     set_gtk_property!(tb4, :tooltip_markup, "Tools")
 
     tb5 = ToolButton("gtk-about")
+    itb5 = Image()
+    if Sys.islinux()
+        set_gtk_property!(itb5, :file, "icons\\icon_help.ico")
+    else
+        set_gtk_property!(itb5, :file, "icons/icon_help.ico")
+    end
+    set_gtk_property!(tb5, :icon_widget, itb5)
     set_gtk_property!(tb5, :label, "Help")
     set_gtk_property!(tb5, :tooltip_markup, "Help")
 
@@ -197,6 +232,8 @@ function OSPropEGUI()
                     ),
                 )
             end
+
+            set_gtk_property!(tb2, :sensitive, true)
         catch
             Nothing
         end
