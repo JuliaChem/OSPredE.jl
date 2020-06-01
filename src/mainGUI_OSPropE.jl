@@ -106,10 +106,16 @@ function OSPropEGUI()
     # Menu Icons
     tb1 = ToolButton("")
     itb1 = Image()
-    if Sys.islinux()
-        set_gtk_property!(itb1, :file, "icons\\icon_new.ico")
+    if Sys.iswindows()
+        global icon =
+            joinpath(dirname(Base.source_path()), "icons\\icon_new.ico")
+        set_gtk_property!(itb1, :file, icon)
     else
-        set_gtk_property!(itb1, :file, "icons/icon_new.ico")
+        set_gtk_property!(
+            itb1,
+            :file,
+            joinpath(dirname(Base.source_path()), "icons/icon_new.ico"),
+        )
     end
     set_gtk_property!(tb1, :icon_widget, itb1)
     set_gtk_property!(tb1, :label, "New")
@@ -125,10 +131,18 @@ function OSPropEGUI()
 
     tb2 = ToolButton("")
     itb2 = Image()
-    if Sys.islinux()
-        set_gtk_property!(itb2, :file, "icons\\icon_pdf.ico")
+    if Sys.iswindows()
+        set_gtk_property!(
+            itb2,
+            :file,
+            joinpath(dirname(Base.source_path()), "icons\\icon_pdf.ico"),
+        )
     else
-        set_gtk_property!(itb2, :file, "icons/icon_pdf.ico")
+        set_gtk_property!(
+            itb2,
+            :file,
+            joinpath(dirname(Base.source_path()), "icons/icon_pdf.ico"),
+        )
     end
     set_gtk_property!(tb2, :icon_widget, itb2)
     set_gtk_property!(tb2, :label, "Export")
@@ -138,10 +152,18 @@ function OSPropEGUI()
     # Close toolbar
     tb3 = ToolButton("")
     itb3 = Image()
-    if Sys.islinux()
-        set_gtk_property!(itb3, :file, "icons\\icon_close.ico")
+    if Sys.iswindows()
+        set_gtk_property!(
+            itb3,
+            :file,
+            joinpath(dirname(Base.source_path()), "icons\\icon_close.ico"),
+        )
     else
-        set_gtk_property!(itb3, :file, "icons/icon_close.ico")
+        set_gtk_property!(
+            itb3,
+            :file,
+            joinpath(dirname(Base.source_path()), "icons/icon_close.ico"),
+        )
     end
     set_gtk_property!(tb3, :icon_widget, itb3)
     set_gtk_property!(tb3, :label, "Close")
@@ -159,21 +181,37 @@ function OSPropEGUI()
 
     tb4 = ToolButton("")
     itb4 = Image()
-    if Sys.islinux()
-        set_gtk_property!(itb4, :file, "icons\\icon_settings.ico")
+    if Sys.iswindows()
+        set_gtk_property!(
+            itb4,
+            :file,
+            joinpath(dirname(Base.source_path()), "icons\\icon_settings.ico"),
+        )
     else
-        set_gtk_property!(itb4, :file, "icons/icon_settings.ico")
+        set_gtk_property!(
+            itb4,
+            :file,
+            joinpath(dirname(Base.source_path()), "icons/icon_settings.ico"),
+        )
     end
     set_gtk_property!(tb4, :icon_widget, itb4)
     set_gtk_property!(tb4, :label, "Tools")
     set_gtk_property!(tb4, :tooltip_markup, "Tools")
 
-    tb5 = ToolButton("gtk-about")
+    tb5 = ToolButton("")
     itb5 = Image()
-    if Sys.islinux()
-        set_gtk_property!(itb5, :file, "icons\\icon_help.ico")
+    if Sys.iswindows()
+        set_gtk_property!(
+            itb5,
+            :file,
+            joinpath(dirname(Base.source_path()), "icons\\icon_help.ico"),
+        )
     else
-        set_gtk_property!(itb5, :file, "icons/icon_help.ico")
+        set_gtk_property!(
+            itb5,
+            :file,
+            joinpath(dirname(Base.source_path()), "icons/icon_help.ico"),
+        )
     end
     set_gtk_property!(tb5, :icon_widget, itb5)
     set_gtk_property!(tb5, :label, "Help")
@@ -225,11 +263,7 @@ function OSPropEGUI()
             for i = 1:size(funcgroups)[1]
                 push!(
                     listFG,
-                    (
-                     funcgroups[i, 1],
-                     funcgroups[i, 2],
-                     funcgroups[i, 3],
-                    ),
+                    (funcgroups[i, 1], funcgroups[i, 2], funcgroups[i, 3]),
                 )
             end
 
@@ -455,11 +489,7 @@ function OSPropEGUI()
     push!(screen, StyleProvider(provider), 600)
 
     # GtkListStore where the data is actually saved
-    global listFG = ListStore(
-        String,
-        Float64,
-        String
-    )
+    global listFG = ListStore(String, Float64, String)
 
     # Gtk TreeView to show the graphical element
     global viewFG = TreeView(TreeModel(listFG))
