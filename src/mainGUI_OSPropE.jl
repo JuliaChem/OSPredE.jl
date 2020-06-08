@@ -5,6 +5,7 @@
 # CONACyT-SENER-Hidrocarburos
 
 using Gtk, Gtk.ShortNames, JLD, Suppressor, CSV, Mustache, Dates, Rsvg, Cairo
+using DefaultApplication
 import DataFrames, MolecularGraph
 
 # Aliasing for shortname
@@ -15,10 +16,12 @@ const DF = DataFrames
 global style_file = joinpath(dirname(Base.source_path()), "style2020.css")
 
 # General Settings
-# Database path
 if Sys.iswindows()
+    # DIPPR Database path
     global pathPUREDIPPR =
         joinpath(dirname(Base.source_path()), "database\\PUREDIPPR.csv")
+
+    # Path for images generated
     global filename_in =
         joinpath(dirname(Base.source_path()), "img\\molsvg.svg")
     global filename_out =
@@ -29,6 +32,23 @@ if Sys.iswindows()
     global filename_out2 =
         joinpath(dirname(Base.source_path()), "img\\molpng2.png")
     imgpath = joinpath(dirname(Base.source_path()), "img")
+
+    # MG Database for functional groups
+    global MG_FirstOrder_Method1 =
+    joinpath(dirname(Base.source_path()), "FGdatabase\\MG_FirstOrder_Method1.csv")
+
+    global MG_SecondOrder_Method1 =
+    joinpath(dirname(Base.source_path()), "FGdatabase\\MG_SecondOrder_Method1.csv")
+
+    global MG_ThirdOrder_Method1 =
+    joinpath(dirname(Base.source_path()), "FGdatabase\\MG_ThirdOrder_Method1.csv")
+
+    # Icons path
+    global ico1 = joinpath(dirname(Base.source_path()), "icons\\icon_new.ico")
+    global ico2 = joinpath(dirname(Base.source_path()), "icons\\icon_pdf.ico")
+    global ico3 = joinpath(dirname(Base.source_path()), "icons\\icon_close.ico")
+    global ico4 = joinpath(dirname(Base.source_path()), "icons\\icon_settings.ico")
+    global ico5 = joinpath(dirname(Base.source_path()), "icons\\icon_help.ico")
 
     try
         rm(imgpath, recursive = true)
@@ -46,7 +66,8 @@ end
 if Sys.islinux()
     global pathPUREDIPPR =
         joinpath(dirname(Base.source_path()), "database/PUREDIPPR.csv")
-    global filename_in = joinpath(dirname(Base.source_path()), "img/molsvg.svg")
+    global filename_in =
+        joinpath(dirname(Base.source_path()), "img/molsvg.svg")
     global filename_out =
         joinpath(dirname(Base.source_path()), "img/molpng.png")
     global filename_in2 =
@@ -56,6 +77,23 @@ if Sys.islinux()
 
     # Delete image file to avoid problems (linux)
     imgpath = joinpath(dirname(Base.source_path()), "img")
+
+    # MG Database for functional groups
+    global MG_FirstOrder_Method1 =
+    joinpath(dirname(Base.source_path()), "FGdatabase/MG_FirstOrder_Method1.csv")
+
+    global MG_SecondOrder_Method1 =
+    joinpath(dirname(Base.source_path()), "FGdatabase/MG_SecondOrder_Method1.csv")
+
+    global MG_ThirdOrder_Method1 =
+    joinpath(dirname(Base.source_path()), "FGdatabase/MG_ThirdOrder_Method1.csv")
+
+    # Icons path
+    global ico1 = joinpath(dirname(Base.source_path()), "icons/icon_new.ico")
+    global ico2 = joinpath(dirname(Base.source_path()), "icons/icon_pdf.ico")
+    global ico3 = joinpath(dirname(Base.source_path()), "icons/icon_close.ico")
+    global ico4 = joinpath(dirname(Base.source_path()), "icons/icon_settings.ico")
+    global ico5 = joinpath(dirname(Base.source_path()), "icons/icon_help.ico")
 
     try
         rm(imgpath, recursive = true)
@@ -70,8 +108,13 @@ if Sys.islinux()
     end
 end
 
+# Loading functional groups
+MG_FirstOrder_Method1 = CSV.read(MG_FirstOrder_Method1, header=false);
+MG_SecondOrder_Method1 = CSV.read(MG_SecondOrder_Method1, header=false);
+MG_ThirdOrder_Method1 = CSV.read(MG_ThirdOrder_Method1, header=false);
+
 # Load default database
-#@async global databaseDIPPR = CSV.read(pathPUREDIPPR)
+databaseDIPPR = CSV.read(pathPUREDIPPR)
 
 # Main function
 function OSPropEGUI()
@@ -106,44 +149,75 @@ function OSPropEGUI()
     # Menu Icons
     tb1 = ToolButton("")
     itb1 = Image()
-    if Sys.iswindows()
-        global icon =
-            joinpath(dirname(Base.source_path()), "icons\\icon_new.ico")
-        set_gtk_property!(itb1, :file, icon)
-    else
-        set_gtk_property!(
-            itb1,
-            :file,
-            joinpath(dirname(Base.source_path()), "icons/icon_new.ico"),
-        )
-    end
+    set_gtk_property!(itb1, :file, ico1)
     set_gtk_property!(tb1, :icon_widget, itb1)
     set_gtk_property!(tb1, :label, "New")
     set_gtk_property!(tb1, :tooltip_markup, "New analysis")
     signal_connect(tb1, :clicked) do widget
         set_gtk_property!(smilesEntry, :text, "")
         set_gtk_property!(tb6, :sensitive, false)
-        empty!(listFG)
+        set_gtk_property!(tb2, :sensitive, false)
+        empty!(listFGHukkerikar1)
+        empty!(listFGHukkerikar2)
+        empty!(listFGHukkerikar3)
+        empty!(listPropHukkerikar)
         empty!(imgSVG)
+        empty!(imgAtomIndex)
         empty!(imgAtomIndex)
         set_gtk_property!(nb, :page, 0)
     end
 
     tb2 = ToolButton("")
     itb2 = Image()
-    if Sys.iswindows()
-        set_gtk_property!(
-            itb2,
-            :file,
-            joinpath(dirname(Base.source_path()), "icons\\icon_pdf.ico"),
+    set_gtk_property!(itb2, :file, ico2)
+    signal_connect(tb2, :clicked) do widget
+        # Time for report
+        timenow = Dates.now()
+        timenow1 = Dates.format(timenow, "dd u yyyy HH:MM:SS")
+
+        LSNS = """
+        \\documentclass{article}
+        \\usepackage{graphicx}
+        \\graphicspath{ {C:/Users/Kelvyn/Dropbox/TecNM-Celaya/04_Research/Properties Estimation/OSPropE.jl/src/img/} }
+        \\usepackage[letterpaper, portrait, margin=1in]{geometry}
+        \\begin{document}
+        \\begin{center}
+        \\Huge{\\textbf{OSPropE}}\\\\
+        \\vspace{2mm}
+        \\large{\\textbf{Properties Estimation Report}}\\break
+        \\normalsize{{:time}}\n
+        \\vspace{5mm}
+        \\rule{15cm}{0.05cm}\n\n\n
+        \\vspace{2mm}
+        \\includegraphics[width=9cm, height=8cm]{molpng}\n
+        \\normalsize{Figure 1. Molecule}\n
+        \\vspace{2mm}
+        \\includegraphics[width=9cm, height=8cm]{molpng2}\n
+        \\normalsize{Figure 2. Molecule with atoms indicated}\n
+        \\vspace{3mm}\n
+        \\rule{15cm}{0.05cm}\n
+        \\end{center}
+        \\end{document}
+        """
+
+        rendered = render(
+        LSNS,
+        time = timenow1)
+
+        filename = string(
+        "C:\\Windows\\Temp\\",
+        "OSPropEReport.tex"
         )
-    else
-        set_gtk_property!(
-            itb2,
-            :file,
-            joinpath(dirname(Base.source_path()), "icons/icon_pdf.ico"),
-        )
+        Base.open(filename, "w") do file
+            write(file, rendered)
+        end
+        run(`pdflatex -output-directory="C:\\Windows\\Temp\\" "OSPropEReport.tex"`)
+        DefaultApplication.open(string(
+        "C:\\Windows\\Temp\\",
+        "OSPropEReport.pdf"
+        ))
     end
+
     set_gtk_property!(tb2, :icon_widget, itb2)
     set_gtk_property!(tb2, :label, "Export")
     set_gtk_property!(tb2, :tooltip_markup, "Export to .pdf")
@@ -152,19 +226,7 @@ function OSPropEGUI()
     # Close toolbar
     tb3 = ToolButton("")
     itb3 = Image()
-    if Sys.iswindows()
-        set_gtk_property!(
-            itb3,
-            :file,
-            joinpath(dirname(Base.source_path()), "icons\\icon_close.ico"),
-        )
-    else
-        set_gtk_property!(
-            itb3,
-            :file,
-            joinpath(dirname(Base.source_path()), "icons/icon_close.ico"),
-        )
-    end
+    set_gtk_property!(itb3, :file, ico3)
     set_gtk_property!(tb3, :icon_widget, itb3)
     set_gtk_property!(tb3, :label, "Close")
     set_gtk_property!(tb3, :tooltip_markup, "Close")
@@ -181,38 +243,14 @@ function OSPropEGUI()
 
     tb4 = ToolButton("")
     itb4 = Image()
-    if Sys.iswindows()
-        set_gtk_property!(
-            itb4,
-            :file,
-            joinpath(dirname(Base.source_path()), "icons\\icon_settings.ico"),
-        )
-    else
-        set_gtk_property!(
-            itb4,
-            :file,
-            joinpath(dirname(Base.source_path()), "icons/icon_settings.ico"),
-        )
-    end
+    set_gtk_property!(itb4, :file, ico4)
     set_gtk_property!(tb4, :icon_widget, itb4)
     set_gtk_property!(tb4, :label, "Tools")
     set_gtk_property!(tb4, :tooltip_markup, "Tools")
 
     tb5 = ToolButton("")
     itb5 = Image()
-    if Sys.iswindows()
-        set_gtk_property!(
-            itb5,
-            :file,
-            joinpath(dirname(Base.source_path()), "icons\\icon_help.ico"),
-        )
-    else
-        set_gtk_property!(
-            itb5,
-            :file,
-            joinpath(dirname(Base.source_path()), "icons/icon_help.ico"),
-        )
-    end
+    set_gtk_property!(itb5, :file, ico5)
     set_gtk_property!(tb5, :icon_widget, itb5)
     set_gtk_property!(tb5, :label, "Help")
     set_gtk_property!(tb5, :tooltip_markup, "Help")
@@ -223,9 +261,16 @@ function OSPropEGUI()
     set_gtk_property!(tb6, :sensitive, false)
     signal_connect(tb6, :clicked) do widget
         global mol, filename_out2, filename_in2, listFG
+        global MG_FirstOrder_Method1
+        global MG_SecondOrder_Method1
+        global MG_ThirdOrder_Method1
 
         try
-            global listFG
+            global listFGHukkerikar1
+            global listFGHukkerikar2
+            global listFGHukkerikar3
+            global listPropHukkerikar
+
             canvas = MG.SvgCanvas()
             MG.draw2d!(canvas, mol)
             MG.drawatomindex!(canvas, mol)
@@ -255,17 +300,344 @@ function OSPropEGUI()
             for (term, components) in fg.componentmap
                 nodes = [sort(collect(comp)) for comp in components]
                 push!(
-                    funcgroups,
-                    (string(term), length(collect(nodes)), string(nodes...)),
+                funcgroups,
+                (string(term), length(collect(nodes)), string(nodes...)),
                 )
             end
 
-            for i = 1:size(funcgroups)[1]
+            # Size for list of FG First-Order
+            rowsFirstOrder = size(MG_FirstOrder_Method1)[1]
+
+            # Size for list of FG First-Order
+            rowsSecondOrder = size(MG_SecondOrder_Method1)[1]
+
+            # Size for list of FG First-Order
+            rowsThirdOrder = size(MG_ThirdOrder_Method1)[1]
+
+            rowsFG = size(funcgroups)[1]
+
+            countsFirstOrder = Array{Int64}(undef, rowsFirstOrder, rowsFG)
+            countsSecondOrder = Array{Int64}(undef, rowsSecondOrder, rowsFG)
+            countsThirdOrder = Array{Int64}(undef, rowsThirdOrder, rowsFG)
+
+            # Extracting equalities for FirstOrder
+            FirstOrderGroups = DF.DataFrame(Group = String[], Times = Int[], Sets = String[])
+
+            for i=1:rowsFirstOrder
+                for j=1:rowsFG
+                    countsFirstOrder[i,j] = convert(Int64, funcgroups[j,1] == MG_FirstOrder_Method1[i,1])
+
+                    if countsFirstOrder[i,j] == 1
+                        push!(FirstOrderGroups, (funcgroups[j,1], funcgroups[j,2], funcgroups[j,3]))
+                    end
+                end
+            end
+
+            # Extracting equalities for SecondOrder
+            SecondOrderGroups = DF.DataFrame(Group = String[], Times = Int[], Sets = String[])
+
+            for i=1:rowsSecondOrder
+                for j=1:rowsFG
+                    countsSecondOrder[i,j] = convert(Int64, funcgroups[j,1] == MG_SecondOrder_Method1[i,1])
+
+                    if countsSecondOrder[i,j] == 1
+                        push!(SecondOrderGroups, (funcgroups[j,1], funcgroups[j,2], funcgroups[j,3]))
+                    end
+                end
+            end
+
+            for i = 1:size(FirstOrderGroups)[1]
                 push!(
-                    listFG,
-                    (funcgroups[i, 1], funcgroups[i, 2], funcgroups[i, 3]),
+                listFGHukkerikar1,
+                (FirstOrderGroups[i, 1], FirstOrderGroups[i, 2], FirstOrderGroups[i, 3]),
                 )
             end
+
+            for i = 1:size(SecondOrderGroups)[1]
+                push!(
+                listFGHukkerikar2,
+                (SecondOrderGroups[i, 1], SecondOrderGroups[i, 2], SecondOrderGroups[i, 3]),
+                )
+            end
+
+            # Compute properties for Hukkerikar
+            # MW
+            MW =  MG.standardweight(mol)[1]
+            push!(listPropHukkerikar, ("Mw (g/mol)", MW))
+
+            # Normal boiling point [K]
+            Tb0 = 244.5165
+            Tb =
+            Tb0 * log(
+            sum(
+            (countsFirstOrder[:, :] .* MG_FirstOrder_Method1[:, 2]) *
+            funcgroups[:, 2],
+            ) + sum(
+            (countsSecondOrder[:, :] .* MG_SecondOrder_Method1[:, 2]) *
+            funcgroups[:, 2],
+            ),
+            )
+            push!(listPropHukkerikar, ("Tb (K)", Tb))
+
+            # Critical temperature [K]
+            Tc0 = 181.6716
+            Tc =
+            Tc0 * log(
+            sum(
+            (countsFirstOrder[:, :] .* MG_FirstOrder_Method1[:, 3]) *
+            funcgroups[:, 2],
+            ) + sum(
+            (countsSecondOrder[:, :] .* MG_SecondOrder_Method1[:, 3]) *
+            funcgroups[:, 2],
+            ),
+            )
+            push!(listPropHukkerikar, ("Tc (K)", Tc))
+
+            # Critical pressure [bar]
+            Pc1 = 0.0519
+            Pc2 = 0.1347
+            Pc =
+            Pc1 +
+            1 /
+            (
+            Pc2 +
+            sum(
+            (countsFirstOrder[:, :] .* MG_FirstOrder_Method1[:, 4]) *
+            funcgroups[:, 2],
+            ) +
+            sum(
+            (countsSecondOrder[:, :] .* MG_SecondOrder_Method1[:, 4]) *
+            funcgroups[:, 2],
+            )
+            )^2
+            push!(listPropHukkerikar, ("Pc bar", Pc))
+
+            # Critical volume [cc/mol]
+            Vc0 = 28.0018
+            Vc =
+            Vc0 +
+            sum(
+            (countsFirstOrder[:, :] .* MG_FirstOrder_Method1[:, 5]) *
+            funcgroups[:, 2],
+            ) +
+            sum(
+            (countsSecondOrder[:, :] .* MG_SecondOrder_Method1[:, 5]) *
+            funcgroups[:, 2],
+            )
+            push!(listPropHukkerikar, ("Vc (cc/mol)", Vc))
+
+            # Normal melting point [K]
+            Tm0 = 143.5706
+            Tm =
+            Tm0 * log(
+            sum(
+            (countsFirstOrder[:, :] .* MG_FirstOrder_Method1[:, 6]) *
+            funcgroups[:, 2],
+            ) + sum(
+            (countsSecondOrder[:, :] .* MG_SecondOrder_Method1[:, 6]) *
+            funcgroups[:, 2],
+            ),
+            )
+            push!(listPropHukkerikar, ("Tm (K)", Tm))
+
+            # Gibbs free energy [kJ/mol]
+            Gf0 = -1.3385
+            Gf =
+            Gf0 +
+            sum(
+            (countsFirstOrder[:, :] .* MG_FirstOrder_Method1[:, 7]) *
+            funcgroups[:, 2],
+            ) +
+            sum(
+            (countsSecondOrder[:, :] .* MG_SecondOrder_Method1[:, 7]) *
+            funcgroups[:, 2],
+            )
+            push!(listPropHukkerikar, ("Gf[298 K] (kJ/mol)", Gf))
+
+            # Enthalpy of formation [kJ/mol]
+            Hf0 = 35.1778
+            Hf =
+            Hf0 +
+            sum(
+            (countsFirstOrder[:, :] .* MG_FirstOrder_Method1[:, 8]) *
+            funcgroups[:, 2],
+            ) +
+            sum(
+            (countsSecondOrder[:, :] .* MG_SecondOrder_Method1[:, 8]) *
+            funcgroups[:, 2],
+            )
+            push!(listPropHukkerikar, ("Hf[298 K] (kJ/mol)", Hf))
+
+            # Enthalpy of fusion [kJ/mol]
+            Hfus0 = -1.7795
+            Hfus =
+            Hfus0 +
+            sum(
+            (countsFirstOrder[:, :] .* MG_FirstOrder_Method1[:, 9]) *
+            funcgroups[:, 2],
+            ) +
+            sum(
+            (countsSecondOrder[:, :] .* MG_SecondOrder_Method1[:, 9]) *
+            funcgroups[:, 2],
+            )
+            push!(listPropHukkerikar, ("Hfus (kJ/mol)", Hfus))
+
+            # Octanol/Water partition coefficient
+            LogKow0 = 0.4876
+            LogKow =
+            LogKow0 +
+            sum(
+            (countsFirstOrder[:, :] .* MG_FirstOrder_Method1[:, 10]) *
+            funcgroups[:, 2],
+            ) +
+            sum(
+            (countsSecondOrder[:, :] .* MG_SecondOrder_Method1[:, 10]) *
+            funcgroups[:, 2],
+            )
+            push!(listPropHukkerikar, ("Log(Kow)", LogKow))
+
+            # Flash point [K]
+            Fp0 = 170.7058
+            Fp =
+            Fp0 +
+            sum(
+            (countsFirstOrder[:, :] .* MG_FirstOrder_Method1[:, 11]) *
+            funcgroups[:, 2],
+            ) +
+            sum(
+            (countsSecondOrder[:, :] .* MG_SecondOrder_Method1[:, 11]) *
+            funcgroups[:, 2],
+            )
+            push!(listPropHukkerikar, ("Fp (K)", Fp))
+
+            # Enthalpy of vaporization (298 K) [kJ/mol]
+            Hv0 = 10.4327
+            Hv =
+            Hv0 +
+            sum(
+            (countsFirstOrder[:, :] .* MG_FirstOrder_Method1[:, 12]) *
+            funcgroups[:, 2],
+            ) +
+            sum(
+            (countsSecondOrder[:, :] .* MG_SecondOrder_Method1[:, 12]) *
+            funcgroups[:, 2],
+            )
+            push!(listPropHukkerikar, ("Hv[298 K] (kJ/mol)", Hv))
+
+            # Enthalpy of vaporization (Tb) [kJ/mol]
+            Hvb0 = 15.4199
+            Hvb =
+            Hvb0 +
+            sum(
+            (countsFirstOrder[:, :] .* MG_FirstOrder_Method1[:, 13]) *
+            funcgroups[:, 2],
+            ) +
+            sum(
+            (countsSecondOrder[:, :] .* MG_SecondOrder_Method1[:, 13]) *
+            funcgroups[:, 2],
+            )
+            push!(listPropHukkerikar, ("Hv[Tb] (kJ/mol)", Hvb))
+
+            # Entropy of vaporization (Tb) [J/mol K]
+            Svb0 = 83.3097
+            Svb =
+            Svb0 +
+            sum(
+            (countsFirstOrder[:, :] .* MG_FirstOrder_Method1[:, 14]) *
+            funcgroups[:, 2],
+            ) +
+            sum(
+            (countsSecondOrder[:, :] .* MG_SecondOrder_Method1[:, 14]) *
+            funcgroups[:, 2],
+            )
+            push!(listPropHukkerikar, ("Sv[Tb] (J/mol K)", Svb))
+
+            # Hildebrand solubility parameter [MPa^(1/2)]
+            δ0 = 21.6654
+            δ =
+            δ0 + (
+            sum(
+            (countsFirstOrder[:, :] .* MG_FirstOrder_Method1[:, 18]) *
+            funcgroups[:, 2],
+            ) + sum(
+            (countsSecondOrder[:, :] .* MG_SecondOrder_Method1[:, 18]) *
+            funcgroups[:, 2],
+            )
+            )
+            push!(listPropHukkerikar, ("δ (MPa^(0.5))", δ))
+
+            # Hansen solubility parameter [MPa^(1/2)]
+            δ0 = 21.6654
+            δD =
+            δ0 + (
+            sum(
+            (countsFirstOrder[:, :] .* MG_FirstOrder_Method1[:, 15]) *
+            funcgroups[:, 2],
+            ) + sum(
+            (countsSecondOrder[:, :] .* MG_SecondOrder_Method1[:, 15]) *
+            funcgroups[:, 2],
+            )
+            )
+            push!(listPropHukkerikar, ("δD (MPa^(0.5))", δD))
+
+            δP =
+            δ0 + (
+            sum(
+            (countsFirstOrder[:, :] .* MG_FirstOrder_Method1[:, 16]) *
+            funcgroups[:, 2],
+            ) + sum(
+            (countsSecondOrder[:, :] .* MG_SecondOrder_Method1[:, 16]) *
+            funcgroups[:, 2],
+            )
+            )
+            push!(listPropHukkerikar, ("δP (MPa^(0.5))", δP))
+
+            δH =
+            δ0 + (
+            sum(
+            (countsFirstOrder[:, :] .* MG_FirstOrder_Method1[:, 17]) *
+            funcgroups[:, 2],
+            ) + sum(
+            (countsSecondOrder[:, :] .* MG_SecondOrder_Method1[:, 17]) *
+            funcgroups[:, 2],
+            )
+            )
+            push!(listPropHukkerikar, ("δH (MPa^(0.5))", δH))
+
+            # Acentric factor
+            ωa = 0.9080
+            ωb = 0.1055
+            ωc = 1.0012
+            ω =
+            ωa * log(
+            (
+            sum(
+            (countsFirstOrder[:, :] .* MG_FirstOrder_Method1[:, 19]) *
+            funcgroups[:, 2],
+            ) +
+            sum(
+            (countsSecondOrder[:, :] .* MG_SecondOrder_Method1[:, 19]) *
+            funcgroups[:, 2],
+            ) +
+            ωc
+            )^(1 / ωb),
+            )
+            push!(listPropHukkerikar, ("ω", ω))
+
+            # Liquid molar volume [cc/kmol]
+            Vm0 = 0.0160
+            Vm =
+            Vm0 +
+            sum(
+            (countsFirstOrder[:, :] .* MG_FirstOrder_Method1[:, 20]) *
+            funcgroups[:, 2],
+            ) +
+            sum(
+            (countsSecondOrder[:, :] .* MG_SecondOrder_Method1[:, 20]) *
+            funcgroups[:, 2],
+            )
+            Vm = 1000 * Vm
+            push!(listPropHukkerikar, ("Wm (cc/mol)", Vm))
 
             set_gtk_property!(tb2, :sensitive, true)
         catch
@@ -340,8 +712,10 @@ function OSPropEGUI()
         try
             smilesString = get_gtk_property(smilesEntry, :text, String)
 
+            smilesString = convert(String, smilesString)
             # Convert String to mol
-            global mol = MG.smilestomol(smilesString)
+            global mol = MG.smilestomol(string(smilesString))
+            global mol = MG.kekulize(mol)
 
             # Convert mol to a string of svg format
             mol_svg =
@@ -365,6 +739,9 @@ function OSPropEGUI()
             Gtk.showall(winOSPropE)
 
             set_gtk_property!(tb6, :sensitive, true)
+
+
+
             global status = 1
         catch
             Nothing
@@ -455,52 +832,76 @@ function OSPropEGUI()
     push!(screen, StyleProvider(provider), 600)
     #set_gtk_property!(nbRes, :height_request, h*.75 - (h*.75)*0.09 - (h*.75)*0.07)
 
-    # Summary
+    # Hukkerikar et al., (2012)#################################################
     nbResFrame0 = Frame()
     screen = Gtk.GAccessor.style_context(nbResFrame0)
     push!(screen, StyleProvider(provider), 600)
 
-    gSumm = Grid()
-    set_gtk_property!(gSumm, :margin_top, 20)
-    set_gtk_property!(gSumm, :margin_bottom, 20)
-    set_gtk_property!(gSumm, :margin_left, 20)
-    set_gtk_property!(gSumm, :margin_right, 20)
-    set_gtk_property!(gSumm, :valign, 3)
-    set_gtk_property!(gSumm, :halign, 3)
-    set_gtk_property!(gSumm, :column_spacing, 20)
-    set_gtk_property!(gSumm, :row_spacing, 20)
+    gHukkerikar = Grid()
+    set_gtk_property!(gHukkerikar, :margin_top, 20)
+    set_gtk_property!(gHukkerikar, :margin_bottom, 20)
+    set_gtk_property!(gHukkerikar, :margin_left, 20)
+    set_gtk_property!(gHukkerikar, :margin_right, 20)
+    set_gtk_property!(gHukkerikar, :valign, 3)
+    set_gtk_property!(gHukkerikar, :halign, 3)
+    set_gtk_property!(gHukkerikar, :column_spacing, 20)
+    set_gtk_property!(gHukkerikar, :row_spacing, 20)
 
-    molFrame = Frame("Molecule")
-    set_gtk_property!(molFrame, :label_xalign, 0.50)
-    set_gtk_property!(molFrame, :height_request, round(h * 0.28))
-    set_gtk_property!(molFrame, :width_request, round(h * 0.32))
-    screen = Gtk.GAccessor.style_context(molFrame)
+    molFrameHukkerikar = Frame("Molecule")
+    set_gtk_property!(molFrameHukkerikar, :label_xalign, 0.50)
+    set_gtk_property!(molFrameHukkerikar, :height_request, round(h * 0.28))
+    set_gtk_property!(molFrameHukkerikar, :width_request, round(h * 0.32))
+    screen = Gtk.GAccessor.style_context(molFrameHukkerikar)
     push!(screen, StyleProvider(provider), 600)
 
     imgAtomIndex = Gtk.Image()
 
-    push!(molFrame, imgAtomIndex)
+    push!(molFrameHukkerikar, imgAtomIndex)
 
-    global fgFrame = Frame("Functional Groups")
-    set_gtk_property!(fgFrame, :label_xalign, 0.50)
-    set_gtk_property!(fgFrame, :height_request, round(h * 0.28))
-    set_gtk_property!(fgFrame, :width_request, round(h * 0.32))
-    screen = Gtk.GAccessor.style_context(fgFrame)
+    # Notebook for FG
+    global nbFGHukkerikar = Notebook()
+    set_gtk_property!(nbFGHukkerikar, :tab_pos, 2)
+    set_gtk_property!(nbFGHukkerikar, :name, "nbFGHukkerikar")
+
+    FGHukkerikar1 = Frame()
+    screen = Gtk.GAccessor.style_context(FGHukkerikar1)
     push!(screen, StyleProvider(provider), 600)
 
+    FGHukkerikar2 = Frame()
+    screen = Gtk.GAccessor.style_context(FGHukkerikar2)
+    push!(screen, StyleProvider(provider), 600)
+
+    FGHukkerikar3 = Frame()
+    screen = Gtk.GAccessor.style_context(FGHukkerikar3)
+    push!(screen, StyleProvider(provider), 600)
+
+    push!(nbFGHukkerikar, FGHukkerikar1, "First Order")
+    push!(nbFGHukkerikar, FGHukkerikar2, "Second Order")
+    push!(nbFGHukkerikar, FGHukkerikar3, "Third Order")
+
+
+    global fgFrameHukkerikar = Frame("Functional Groups")
+    set_gtk_property!(fgFrameHukkerikar, :label_xalign, 0.50)
+    set_gtk_property!(fgFrameHukkerikar, :height_request, round(h * 0.28))
+    set_gtk_property!(fgFrameHukkerikar, :width_request, round(h * 0.32))
+    screen = Gtk.GAccessor.style_context(fgFrameHukkerikar)
+    push!(screen, StyleProvider(provider), 600)
+
+    ##################################################33333
+    # First order fgFrameHukkerikar
     # GtkListStore where the data is actually saved
-    global listFG = ListStore(String, Float64, String)
+    global listFGHukkerikar1 = ListStore(String, Int64, String)
 
     # Gtk TreeView to show the graphical element
-    global viewFG = TreeView(TreeModel(listFG))
-    set_gtk_property!(viewFG, :enable_grid_lines, 3)
-    set_gtk_property!(viewFG, :enable_search, true)
+    global viewFGHukkerikar1 = TreeView(TreeModel(listFGHukkerikar1))
+    set_gtk_property!(viewFGHukkerikar1, :enable_grid_lines, 3)
+    set_gtk_property!(viewFGHukkerikar1, :enable_search, true)
 
     # Window that allow scroll the TreeView
-    scrollFG = ScrolledWindow(viewFG)
+    scrollFGHukkerikar1 = ScrolledWindow(viewFGHukkerikar1)
     #set_gtk_property!(scrollFG, :width_request, 750)
     #set_gtk_property!(scrollFG, :height_request, 250)
-    selection1 = Gtk.GAccessor.selection(viewFG)
+    selection1 = Gtk.GAccessor.selection(viewFGHukkerikar1)
 
     # Column definitions
     cTxt1 = CellRendererText()
@@ -510,24 +911,114 @@ function OSPropEGUI()
     c13 = TreeViewColumn("Index", cTxt1, Dict([("text", 2)]))
 
     # Add column to TreeView
-    push!(viewFG, c11, c12, c13)
+    push!(viewFGHukkerikar1, c11, c12, c13)
 
-    push!(fgFrame, scrollFG)
+    #push!(fgFrameHukkerikar, scrollFGHukkerikar)
+    push!(FGHukkerikar1, scrollFGHukkerikar1)
 
-    propFrame = Frame("Properties Estimated")
-    set_gtk_property!(propFrame, :label_xalign, 0.50)
-    set_gtk_property!(propFrame, :height_request, round(h * 0.20))
-    set_gtk_property!(propFrame, :width_request, round(h * 0.32))
-    screen = Gtk.GAccessor.style_context(propFrame)
+    ##################################################33333
+    # Second order fgFrameHukkerikar
+    # GtkListStore where the data is actually saved
+    global listFGHukkerikar2 = ListStore(String, Int64, String)
+
+    # Gtk TreeView to show the graphical element
+    global viewFGHukkerikar2 = TreeView(TreeModel(listFGHukkerikar2))
+    set_gtk_property!(viewFGHukkerikar1, :enable_grid_lines, 3)
+    set_gtk_property!(viewFGHukkerikar1, :enable_search, true)
+
+    # Window that allow scroll the TreeView
+    scrollFGHukkerikar2 = ScrolledWindow(viewFGHukkerikar2)
+    #set_gtk_property!(scrollFG, :width_request, 750)
+    #set_gtk_property!(scrollFG, :height_request, 250)
+    selection1 = Gtk.GAccessor.selection(viewFGHukkerikar2)
+
+    # Column definitions
+    cTxt1 = CellRendererText()
+
+    c11 = TreeViewColumn("FG", cTxt1, Dict([("text", 0)]))
+    c12 = TreeViewColumn("Count", cTxt1, Dict([("text", 1)]))
+    c13 = TreeViewColumn("Index", cTxt1, Dict([("text", 2)]))
+
+    # Add column to TreeView
+    push!(viewFGHukkerikar2, c11, c12, c13)
+
+    #push!(fgFrameHukkerikar, scrollFGHukkerikar)
+    push!(FGHukkerikar2, scrollFGHukkerikar2)
+
+    ##################################################33333
+    # Second order fgFrameHukkerikar
+    # GtkListStore where the data is actually saved
+    global listFGHukkerikar3 = ListStore(String, Int64, String)
+
+    # Gtk TreeView to show the graphical element
+    global viewFGHukkerikar3 = TreeView(TreeModel(listFGHukkerikar3))
+    set_gtk_property!(viewFGHukkerikar3, :enable_grid_lines, 3)
+    set_gtk_property!(viewFGHukkerikar3, :enable_search, true)
+
+    # Window that allow scroll the TreeView
+    scrollFGHukkerikar3 = ScrolledWindow(viewFGHukkerikar3)
+    #set_gtk_property!(scrollFG, :width_request, 750)
+    #set_gtk_property!(scrollFG, :height_request, 250)
+    selection1 = Gtk.GAccessor.selection(viewFGHukkerikar3)
+
+    # Column definitions
+    cTxt1 = CellRendererText()
+
+    c11 = TreeViewColumn("FG", cTxt1, Dict([("text", 0)]))
+    c12 = TreeViewColumn("Count", cTxt1, Dict([("text", 1)]))
+    c13 = TreeViewColumn("Index", cTxt1, Dict([("text", 2)]))
+
+    # Add column to TreeView
+    push!(viewFGHukkerikar3, c11, c12, c13)
+
+    #push!(fgFrameHukkerikar, scrollFGHukkerikar)
+    push!(FGHukkerikar3, scrollFGHukkerikar3)
+
+    ###########################################################################
+
+    propFrameHukkerikar = Frame("Properties Estimated")
+    set_gtk_property!(propFrameHukkerikar, :label_xalign, 0.50)
+    set_gtk_property!(propFrameHukkerikar, :height_request, round(h * 0.20))
+    set_gtk_property!(propFrameHukkerikar, :width_request, round(h * 0.32))
+    screen = Gtk.GAccessor.style_context(propFrameHukkerikar)
     push!(screen, StyleProvider(provider), 600)
 
-    gSumm[1, 1] = molFrame
-    gSumm[2, 1] = fgFrame
-    gSumm[1:2, 2] = propFrame
 
-    push!(nbResFrame0, gSumm)
+    ##################################################33333
+    # Properties fgFrameHukkerikar
+    # GtkListStore where the data is actually saved
+    global listPropHukkerikar = ListStore(String, Float64)
 
-    # Marrero & Gani
+    # Gtk TreeView to show the graphical element
+    global viewPropHukkerikar = TreeView(TreeModel(listPropHukkerikar))
+    set_gtk_property!(viewPropHukkerikar, :enable_grid_lines, 3)
+    set_gtk_property!(viewPropHukkerikar, :enable_search, true)
+
+    # Window that allow scroll the TreeView
+    scrollPropHukkerikar = ScrolledWindow(viewPropHukkerikar)
+    #set_gtk_property!(scrollFG, :width_request, 750)
+    #set_gtk_property!(scrollFG, :height_request, 250)
+    selection1 = Gtk.GAccessor.selection(viewPropHukkerikar)
+
+    # Column definitions
+    cTxt1 = CellRendererText()
+
+    c11 = TreeViewColumn("Property", cTxt1, Dict([("text", 0)]))
+    c12 = TreeViewColumn("Value", cTxt1, Dict([("text", 1)]))
+
+    # Add column to TreeView
+    push!(viewPropHukkerikar, c11, c12)
+
+    #push!(fgFrameHukkerikar, scrollFGHukkerikar)
+    push!(propFrameHukkerikar, scrollPropHukkerikar)
+
+    gHukkerikar[1, 1] = molFrameHukkerikar
+    gHukkerikar[2, 1:2] = nbFGHukkerikar
+    gHukkerikar[1, 2] = propFrameHukkerikar
+
+    push!(nbResFrame0, gHukkerikar)
+
+    # Joback & Reid
     nbResFrame1 = Frame()
     screen = Gtk.GAccessor.style_context(nbResFrame1)
     push!(screen, StyleProvider(provider), 600)
@@ -537,9 +1028,9 @@ function OSPropEGUI()
     screen = Gtk.GAccessor.style_context(nbResFrame2)
     push!(screen, StyleProvider(provider), 600)
 
-    push!(nbRes, nbResFrame0, "  Summary  ")
-    push!(nbRes, nbResFrame1, "  Marrero & Gani  ")
-    push!(nbRes, nbResFrame2, "  Jimenez & Sánchez  ")
+    push!(nbRes, nbResFrame0, "  Hukkerikar et al., (2012)  ")
+    push!(nbRes, nbResFrame1, "  Joback & Reid (1987)  ")
+    push!(nbRes, nbResFrame2, "  Summary  ")
 
     push!(nbFrame1, nbRes)
     push!(nb, nbFrame1, "  Results  ")
