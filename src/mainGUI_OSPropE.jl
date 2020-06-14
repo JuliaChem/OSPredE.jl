@@ -26,12 +26,11 @@ if Sys.iswindows()
         joinpath(dirname(Base.source_path()), "img\\molsvg.svg")
     global filename_out =
         joinpath(dirname(Base.source_path()), "img\\molpng.png")
-    imgpath = joinpath(dirname(Base.source_path()), "img")
     global filename_in2 =
         joinpath(dirname(Base.source_path()), "img\\molsvg2.svg")
     global filename_out2 =
         joinpath(dirname(Base.source_path()), "img\\molpng2.png")
-    imgpath = joinpath(dirname(Base.source_path()), "img")
+    global imgpath = joinpath(dirname(Base.source_path()), "img")
 
     # MG Database for functional groups
     global MG_FirstOrder_Method1 =
@@ -167,10 +166,13 @@ function OSPropEGUI()
         set_gtk_property!(nb, :page, 0)
     end
 
+    # pdf report
     tb2 = ToolButton("")
     itb2 = Image()
     set_gtk_property!(itb2, :file, ico2)
     signal_connect(tb2, :clicked) do widget
+        global Lili = save_dialog_native("Save as...", Null(), ("*.pdf",))
+
         # Time for report
         timenow = Dates.now()
         timenow1 = Dates.format(timenow, "dd u yyyy HH:MM:SS")
@@ -178,7 +180,7 @@ function OSPropEGUI()
         LSNS = """
         \\documentclass{article}
         \\usepackage{graphicx}
-        \\graphicspath{ {C:/Users/Kelvyn/Dropbox/TecNM-Celaya/04_Research/Properties Estimation/OSPropE.jl/src/img/} }
+        \\graphicspath{ {:ipath} }
         \\usepackage[letterpaper, portrait, margin=1in]{geometry}
         \\begin{document}
         \\begin{center}
@@ -202,7 +204,7 @@ function OSPropEGUI()
 
         rendered = render(
         LSNS,
-        time = timenow1)
+        time = timenow1, ipath = imgpath)
 
         filename = string(
         "C:\\Windows\\Temp\\",
