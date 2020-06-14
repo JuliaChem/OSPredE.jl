@@ -22,15 +22,10 @@ if Sys.iswindows()
         joinpath(dirname(Base.source_path()), "database\\PUREDIPPR.csv")
 
     # Path for images generated
-    global filename_in =
-        joinpath(dirname(Base.source_path()), "img\\molsvg.svg")
-    global filename_out =
-        joinpath(dirname(Base.source_path()), "img\\molpng.png")
-    global filename_in2 =
-        joinpath(dirname(Base.source_path()), "img\\molsvg2.svg")
-    global filename_out2 =
-        joinpath(dirname(Base.source_path()), "img\\molpng2.png")
-    global imgpath = joinpath(dirname(Base.source_path()), "img")
+    global filename_in = "C:\\Windows\\Temp\\molsvg.svg"
+    global filename_out = "C:\\Windows\\Temp\\molpng.png"
+    global filename_in2 = "C:\\Windows\\Temp\\molsvg2.svg"
+    global filename_out2 = "C:\\Windows\\Temp\\molpng2.png"
 
     # MG Database for functional groups
     global MG_FirstOrder_Method1 =
@@ -48,34 +43,15 @@ if Sys.iswindows()
     global ico3 = joinpath(dirname(Base.source_path()), "icons\\icon_close.ico")
     global ico4 = joinpath(dirname(Base.source_path()), "icons\\icon_settings.ico")
     global ico5 = joinpath(dirname(Base.source_path()), "icons\\icon_help.ico")
-
-    try
-        rm(imgpath, recursive = true)
-    catch
-        Nothing
-    end
-
-    try
-        mkdir(imgpath)
-    catch
-        Nothing
-    end
 end
 
 if Sys.islinux()
     global pathPUREDIPPR =
         joinpath(dirname(Base.source_path()), "database/PUREDIPPR.csv")
-    global filename_in =
-        joinpath(dirname(Base.source_path()), "img/molsvg.svg")
-    global filename_out =
-        joinpath(dirname(Base.source_path()), "img/molpng.png")
-    global filename_in2 =
-        joinpath(dirname(Base.source_path()), "img/molsvg2.svg")
-    global filename_out2 =
-        joinpath(dirname(Base.source_path()), "img/molpng2.png")
-
-    # Delete image file to avoid problems (linux)
-    imgpath = joinpath(dirname(Base.source_path()), "img")
+    global filename_in = "/temp/molsvg.svg"
+    global filename_out = "/temp/molpng.png"
+    global filename_in2 = "/temp/molsvg2.svg"
+    global filename_out2 = "/temp/molpng2.png"
 
     # MG Database for functional groups
     global MG_FirstOrder_Method1 =
@@ -93,18 +69,6 @@ if Sys.islinux()
     global ico3 = joinpath(dirname(Base.source_path()), "icons/icon_close.ico")
     global ico4 = joinpath(dirname(Base.source_path()), "icons/icon_settings.ico")
     global ico5 = joinpath(dirname(Base.source_path()), "icons/icon_help.ico")
-
-    try
-        rm(imgpath, recursive = true)
-    catch
-        Nothing
-    end
-
-    try
-        mkdir(imgpath)
-    catch
-        Nothing
-    end
 end
 
 # Loading functional groups
@@ -173,51 +137,54 @@ function OSPropEGUI()
     signal_connect(tb2, :clicked) do widget
         global Lili = save_dialog_native("Save as...", Null(), ("*.pdf",))
 
+        #imgpathtex = replace(filename_out, "\\" => "/")
+        #imgpathtex = string(imgpathtex,"/")
+        #println(imgpathtex)
+
         # Time for report
         timenow = Dates.now()
         timenow1 = Dates.format(timenow, "dd u yyyy HH:MM:SS")
 
-        LSNS = """
-        \\documentclass{article}
-        \\usepackage{graphicx}
-        \\graphicspath{ {:ipath} }
-        \\usepackage[letterpaper, portrait, margin=1in]{geometry}
-        \\begin{document}
-        \\begin{center}
-        \\Huge{\\textbf{OSPropE}}\\\\
-        \\vspace{2mm}
-        \\large{\\textbf{Properties Estimation Report}}\\break
-        \\normalsize{{:time}}\n
-        \\vspace{5mm}
-        \\rule{15cm}{0.05cm}\n\n\n
-        \\vspace{2mm}
-        \\includegraphics[width=9cm, height=8cm]{molpng}\n
-        \\normalsize{Figure 1. Molecule}\n
-        \\vspace{2mm}
-        \\includegraphics[width=9cm, height=8cm]{molpng2}\n
-        \\normalsize{Figure 2. Molecule with atoms indicated}\n
-        \\vspace{3mm}\n
-        \\rule{15cm}{0.05cm}\n
-        \\end{center}
-        \\end{document}
-        """
+        if Sys.iswindows()
+            LSNS = """
+            \\documentclass{article}
+            \\usepackage{graphicx}
+            \\graphicspath{ {C:/Windows/Temp/} }
+            \\usepackage[letterpaper, portrait, margin=1in]{geometry}
+            \\begin{document}
+            \\begin{center}
+            \\Huge{\\textbf{OSPropE}}\\\\
+            \\vspace{2mm}
+            \\large{\\textbf{Properties Estimation Report}}\\break
+            \\normalsize{{:time}}\n
+            \\vspace{5mm}
+            \\rule{15cm}{0.05cm}\n\n\n
+            \\vspace{2mm}
+            \\includegraphics[width=9cm, height=8cm]{molpng}\n
+            \\normalsize{Figure 1. Molecule}\n
+            \\vspace{2mm}
+            \\includegraphics[width=9cm, height=8cm]{molpng2}\n
+            \\normalsize{Figure 2. Molecule with atoms indicated}\n
+            \\vspace{3mm}\n
+            \\rule{15cm}{0.05cm}\n
+            \\end{center}
+            \\end{document}
+            """
+        end
+        rendered = render(LSNS, time = timenow1)
 
-        rendered = render(
-        LSNS,
-        time = timenow1, ipath = imgpath)
-
-        filename = string(
-        "C:\\Windows\\Temp\\",
-        "OSPropEReport.tex"
-        )
-        Base.open(filename, "w") do file
+        fileNameBase = string(basename(Lili), ".tex")
+        fileName = string("C:\\Windows\\Temp\\", fileNameBase)
+        Base.open(fileName, "w") do file
             write(file, rendered)
         end
-        run(`pdflatex -output-directory="C:\\Windows\\Temp\\" "OSPropEReport.tex"`)
-        DefaultApplication.open(string(
-        "C:\\Windows\\Temp\\",
-        "OSPropEReport.pdf"
-        ))
+        run(`pdflatex -output-directory="C:\\Windows\\Temp\\" $(fileNameBase)`)
+
+        pdfName = string(Lili, ".pdf")
+        fileNameBase = string(basename(Lili), ".pdf")
+        fileName = string("C:\\Windows\\Temp\\", fileNameBase)
+        cp(fileName, string(Lili, ".pdf"); force=true)
+        DefaultApplication.open(pdfName)
     end
 
     set_gtk_property!(tb2, :icon_widget, itb2)
