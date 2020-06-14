@@ -265,7 +265,7 @@ function OSPropEGUI()
             set_gtk_property!(imgAtomIndex, :file, filename_out2)
 
             # Functional Groups Analysis
-            fg = MG.functionalgroupgraph(mol)
+            fg = MG.functionalgroupgraph(mol, "Hukkerikar")
             global funcgroups =
                 DF.DataFrame(Group = String[], Counts = Int[], Sets = String[])
 
@@ -787,7 +787,13 @@ function OSPropEGUI()
 
 
     push!(nbFrame0, gDraw)
-    push!(nb, nbFrame0, "  Drawing  ")
+    push!(nb, nbFrame0, "  Estructure Drawing  ")
+
+    ################################################################################
+    # Molecular search
+    ################################################################################
+    nbFrame01 = Frame()
+    push!(nb, nbFrame01, "  Molecular Search  ")
 
     ################################################################################
     # Resuls
