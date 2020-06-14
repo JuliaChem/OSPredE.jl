@@ -137,54 +137,57 @@ function OSPropEGUI()
     signal_connect(tb2, :clicked) do widget
         global Lili = save_dialog_native("Save as...", Null(), ("*.pdf",))
 
-        #imgpathtex = replace(filename_out, "\\" => "/")
-        #imgpathtex = string(imgpathtex,"/")
-        #println(imgpathtex)
+        if ~isempty(Lili)
+            # Time for report
+            timenow = Dates.now()
+            timenow1 = Dates.format(timenow, "dd u yyyy HH:MM:SS")
 
-        # Time for report
-        timenow = Dates.now()
-        timenow1 = Dates.format(timenow, "dd u yyyy HH:MM:SS")
+            if Sys.iswindows()
+                LSNS = """
+                \\documentclass{article}
+                \\usepackage{graphicx}
+                \\graphicspath{ {C:/Windows/Temp/} }
+                \\usepackage[letterpaper, portrait, margin=1in]{geometry}
+                \\begin{document}
+                \\begin{center}
+                \\Huge{\\textbf{OSPropE}}\\\\
+                \\vspace{2mm}
+                \\large{\\textbf{Properties Estimation Report}}\\break
+                \\normalsize{{:time}}\n
+                \\vspace{5mm}
+                \\rule{15cm}{0.05cm}\n\n\n
+                \\vspace{2mm}
+                \\includegraphics[width=9cm, height=8cm]{molpng}\n
+                \\normalsize{Figure 1. Molecule}\n
+                \\vspace{2mm}
+                \\includegraphics[width=9cm, height=8cm]{molpng2}\n
+                \\normalsize{Figure 2. Molecule with atoms indicated}\n
+                \\vspace{3mm}\n
+                \\rule{15cm}{0.05cm}\n
+                \\end{center}
+                \\end{document}
+                """
 
-        if Sys.iswindows()
-            LSNS = """
-            \\documentclass{article}
-            \\usepackage{graphicx}
-            \\graphicspath{ {C:/Windows/Temp/} }
-            \\usepackage[letterpaper, portrait, margin=1in]{geometry}
-            \\begin{document}
-            \\begin{center}
-            \\Huge{\\textbf{OSPropE}}\\\\
-            \\vspace{2mm}
-            \\large{\\textbf{Properties Estimation Report}}\\break
-            \\normalsize{{:time}}\n
-            \\vspace{5mm}
-            \\rule{15cm}{0.05cm}\n\n\n
-            \\vspace{2mm}
-            \\includegraphics[width=9cm, height=8cm]{molpng}\n
-            \\normalsize{Figure 1. Molecule}\n
-            \\vspace{2mm}
-            \\includegraphics[width=9cm, height=8cm]{molpng2}\n
-            \\normalsize{Figure 2. Molecule with atoms indicated}\n
-            \\vspace{3mm}\n
-            \\rule{15cm}{0.05cm}\n
-            \\end{center}
-            \\end{document}
-            """
+                rendered = render(LSNS, time = timenow1)
+
+                fileNameBase = string(basename(Lili), ".tex")
+                fileName = string("C:\\Windows\\Temp\\", fileNameBase)
+                Base.open(fileName, "w") do file
+                    write(file, rendered)
+                end
+                run(`pdflatex -output-directory="C:\\Windows\\Temp\\" $(fileNameBase)`)
+
+                pdfName = string(Lili, ".pdf")
+                fileNameBase = string(basename(Lili), ".pdf")
+                fileName = string("C:\\Windows\\Temp\\", fileNameBase)
+                cp(fileName, string(Lili, ".pdf"); force=true)
+                DefaultApplication.open(pdfName)
+            end
+
+            if Sys.islinux()
+                warn_dialog("Export as .pdf is not currently implemented on Linux Operating System", winOSPropE)
+            end
         end
-        rendered = render(LSNS, time = timenow1)
-
-        fileNameBase = string(basename(Lili), ".tex")
-        fileName = string("C:\\Windows\\Temp\\", fileNameBase)
-        Base.open(fileName, "w") do file
-            write(file, rendered)
-        end
-        run(`pdflatex -output-directory="C:\\Windows\\Temp\\" $(fileNameBase)`)
-
-        pdfName = string(Lili, ".pdf")
-        fileNameBase = string(basename(Lili), ".pdf")
-        fileName = string("C:\\Windows\\Temp\\", fileNameBase)
-        cp(fileName, string(Lili, ".pdf"); force=true)
-        DefaultApplication.open(pdfName)
     end
 
     set_gtk_property!(tb2, :icon_widget, itb2)
