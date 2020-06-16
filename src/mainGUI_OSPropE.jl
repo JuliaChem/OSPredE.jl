@@ -29,13 +29,16 @@ if Sys.iswindows()
 
     # MG Database for functional groups
     global MG_FirstOrder_Method1 =
-    joinpath(dirname(Base.source_path()), "FGdatabase\\MG_FirstOrder_Method1.csv")
+    joinpath(dirname(Base.source_path()), "FGdatabase\\HukkerikarDatabaseM1G1.csv")
 
     global MG_SecondOrder_Method1 =
-    joinpath(dirname(Base.source_path()), "FGdatabase\\MG_SecondOrder_Method1.csv")
+    joinpath(dirname(Base.source_path()), "FGdatabase\\HukkerikarDatabaseM1G2.csv")
 
     global MG_ThirdOrder_Method1 =
-    joinpath(dirname(Base.source_path()), "FGdatabase\\MG_ThirdOrder_Method1.csv")
+    joinpath(dirname(Base.source_path()), "FGdatabase\\HukkerikarDatabaseM1G3.csv")
+
+    global Joback_Database =
+    joinpath(dirname(Base.source_path()), "FGdatabase\\JobackDatabase.csv")
 
     # Icons path
     global ico1 = joinpath(dirname(Base.source_path()), "icons\\icon_new.ico")
@@ -55,14 +58,16 @@ if Sys.islinux()
 
     # MG Database for functional groups
     global MG_FirstOrder_Method1 =
-    joinpath(dirname(Base.source_path()), "FGdatabase/MG_FirstOrder_Method1.csv")
+    joinpath(dirname(Base.source_path()), "FGdatabase/HukkerikarDatabaseM1G1.csv")
 
     global MG_SecondOrder_Method1 =
-    joinpath(dirname(Base.source_path()), "FGdatabase/MG_SecondOrder_Method1.csv")
+    joinpath(dirname(Base.source_path()), "FGdatabase/HukkerikarDatabaseM1G2.csv")
 
     global MG_ThirdOrder_Method1 =
-    joinpath(dirname(Base.source_path()), "FGdatabase/MG_ThirdOrder_Method1.csv")
+    joinpath(dirname(Base.source_path()), "FGdatabase/HukkerikarDatabaseM1G3.csv")
 
+    global Joback_Database =
+    joinpath(dirname(Base.source_path()), "FGdatabase/JobackDatabase.csv")
     # Icons path
     global ico1 = joinpath(dirname(Base.source_path()), "icons/icon_new.ico")
     global ico2 = joinpath(dirname(Base.source_path()), "icons/icon_pdf.ico")
@@ -75,6 +80,7 @@ end
 MG_FirstOrder_Method1 = CSV.read(MG_FirstOrder_Method1, header=false);
 MG_SecondOrder_Method1 = CSV.read(MG_SecondOrder_Method1, header=false);
 MG_ThirdOrder_Method1 = CSV.read(MG_ThirdOrder_Method1, header=false);
+JobackDatabase = CSV.read(Joback_Database, header=false);
 
 # Load default database
 databaseDIPPR = CSV.read(pathPUREDIPPR)
@@ -136,6 +142,7 @@ function OSPropEGUI()
     set_gtk_property!(itb2, :file, ico2)
     signal_connect(tb2, :clicked) do widget
         global Lili = save_dialog_native("Save as...", Null(), ("*.pdf",))
+        global FirstOrderGroups, SecondOrderGroups, PropHuk
 
         if ~isempty(Lili)
             # Time for report
@@ -143,6 +150,21 @@ function OSPropEGUI()
             timenow1 = Dates.format(timenow, "dd u yyyy HH:MM:SS")
 
             if Sys.iswindows()
+
+                # Headers for dataframes
+
+                fmtH1 = string("|",repeat("c|", size(FirstOrderGroups,2)))
+                headerH1 = join(string.(names(FirstOrderGroups)), " & ")
+                rowH1 = join(["{{:$x}}" for x in map(string, names(FirstOrderGroups))], " & ")
+
+                fmtH2 = string("|",repeat("c|", size(SecondOrderGroups,2)))
+                headerH2 = join(string.(names(SecondOrderGroups)), " & ")
+                rowH2 = join(["{{:$x}}" for x in map(string, names(SecondOrderGroups))], " & ")
+
+                fmtPropH = string("|",repeat("c|", size(PropHuk,2)))
+                headerPropH = join(string.(names(PropHuk)), " & ")
+                rowPropH = join(["{{:$x}}" for x in map(string, names(PropHuk))], " & ")
+
                 LSNS = """
                 \\documentclass{article}
                 \\usepackage{graphicx}
@@ -164,11 +186,53 @@ function OSPropEGUI()
                 \\normalsize{Figure 2. Molecule with atoms indicated}\n
                 \\vspace{3mm}\n
                 \\rule{15cm}{0.05cm}\n
+                \\pagebreak
+
+                \\large{\\textbf{Hukkerikar's Method (2012)}}\\break
+                \\vspace{5mm}
+                \\rule{15cm}{0.05cm}\n\n\n
+                \\vspace{2mm}
+                \\normalsize{Table 1. Functional Groups of First Order}\n
+                \\vspace{2mm}
+                \\begin{tabular}{$fmtH1}
+                \\hline
+                $headerH1\\\\
+                \\hline
+                {{#:FGH1}} $rowH1\\cr
+                {{/:FGH1}}
+                \\hline\n
+                \\end{tabular}
+
+                \\vspace{5mm}\n
+                \\normalsize{Table 2. Functional Groups of Second Order}\n
+                \\vspace{2mm}
+                \\begin{tabular}{$fmtH2}
+                \\hline
+                $headerH2\\\\
+                \\hline
+                {{#:FGH2}} $rowH2\\cr
+                {{/:FGH2}}
+                \\hline\n
+                \\end{tabular}
+
+                \\vspace{5mm}\n
+                \\normalsize{Table 3. Thermodynamic properties estimated}\n
+                \\vspace{2mm}
+                \\begin{tabular}{$fmtPropH}
+                \\hline
+                $headerPropH\\\\
+                \\hline
+                {{#:PropH}} $rowPropH\\cr
+                {{/:PropH}}
+                \\hline\n
+                \\end{tabular}
+                \\vspace{3mm}\n
                 \\end{center}
                 \\end{document}
                 """
 
-                rendered = render(LSNS, time = timenow1)
+                rendered = render(LSNS, time = timenow1, FGH1 = FirstOrderGroups,
+                FGH2 = SecondOrderGroups, PropH = PropHuk)
 
                 fileNameBase = string(basename(Lili), ".tex")
                 fileName = string("C:\\Windows\\Temp\\", fileNameBase)
@@ -236,7 +300,10 @@ function OSPropEGUI()
         global MG_FirstOrder_Method1
         global MG_SecondOrder_Method1
         global MG_ThirdOrder_Method1
+        global JobackDatabase
 
+        ########################################################################
+        # Hukkerikar
         try
             global listFGHukkerikar1
             global listFGHukkerikar2
@@ -293,7 +360,7 @@ function OSPropEGUI()
             countsThirdOrder = Array{Int64}(undef, rowsThirdOrder, rowsFG)
 
             # Extracting equalities for FirstOrder
-            FirstOrderGroups = DF.DataFrame(Group = String[], Times = Int[], Sets = String[])
+            global FirstOrderGroups = DF.DataFrame(Group = String[], Times = Int[], Sets = String[])
 
             for i=1:rowsFirstOrder
                 for j=1:rowsFG
@@ -306,7 +373,7 @@ function OSPropEGUI()
             end
 
             # Extracting equalities for SecondOrder
-            SecondOrderGroups = DF.DataFrame(Group = String[], Times = Int[], Sets = String[])
+            global SecondOrderGroups = DF.DataFrame(Group = String[], Times = Int[], Sets = String[])
 
             for i=1:rowsSecondOrder
                 for j=1:rowsFG
@@ -333,9 +400,11 @@ function OSPropEGUI()
             end
 
             # Compute properties for Hukkerikar
+            global PropHuk = DF.DataFrame(Property = String[], Value = Float64[])
             # MW
             MW =  MG.standardweight(mol)[1]
             push!(listPropHukkerikar, ("Mw (g/mol)", MW))
+            push!(PropHuk, ("Mw", MW))
 
             # Normal boiling point [K]
             Tb0 = 244.5165
@@ -350,6 +419,7 @@ function OSPropEGUI()
             ),
             )
             push!(listPropHukkerikar, ("Tb (K)", Tb))
+            push!(PropHuk, ("Tb", Tb))
 
             # Critical temperature [K]
             Tc0 = 181.6716
@@ -364,6 +434,7 @@ function OSPropEGUI()
             ),
             )
             push!(listPropHukkerikar, ("Tc (K)", Tc))
+            push!(PropHuk, ("Tc", Tc))
 
             # Critical pressure [bar]
             Pc1 = 0.0519
@@ -383,6 +454,7 @@ function OSPropEGUI()
             )
             )^2
             push!(listPropHukkerikar, ("Pc bar", Pc))
+            push!(PropHuk, ("Pc", Pc))
 
             # Critical volume [cc/mol]
             Vc0 = 28.0018
@@ -397,6 +469,7 @@ function OSPropEGUI()
             funcgroups[:, 2],
             )
             push!(listPropHukkerikar, ("Vc (cc/mol)", Vc))
+            push!(PropHuk, ("Vc", Vc))
 
             # Normal melting point [K]
             Tm0 = 143.5706
@@ -411,6 +484,7 @@ function OSPropEGUI()
             ),
             )
             push!(listPropHukkerikar, ("Tm (K)", Tm))
+            push!(PropHuk, ("Tm", Tm))
 
             # Gibbs free energy [kJ/mol]
             Gf0 = -1.3385
@@ -425,6 +499,7 @@ function OSPropEGUI()
             funcgroups[:, 2],
             )
             push!(listPropHukkerikar, ("Gf[298 K] (kJ/mol)", Gf))
+            push!(PropHuk, ("Gf[298 K]", Gf))
 
             # Enthalpy of formation [kJ/mol]
             Hf0 = 35.1778
@@ -439,6 +514,7 @@ function OSPropEGUI()
             funcgroups[:, 2],
             )
             push!(listPropHukkerikar, ("Hf[298 K] (kJ/mol)", Hf))
+            push!(PropHuk, ("Hf[298 K]", Hf))
 
             # Enthalpy of fusion [kJ/mol]
             Hfus0 = -1.7795
@@ -453,6 +529,7 @@ function OSPropEGUI()
             funcgroups[:, 2],
             )
             push!(listPropHukkerikar, ("Hfus (kJ/mol)", Hfus))
+            push!(PropHuk, ("Hfus", Hfus))
 
             # Octanol/Water partition coefficient
             LogKow0 = 0.4876
@@ -467,6 +544,7 @@ function OSPropEGUI()
             funcgroups[:, 2],
             )
             push!(listPropHukkerikar, ("Log(Kow)", LogKow))
+            push!(PropHuk, ("Log(Kow)", LogKow))
 
             # Flash point [K]
             Fp0 = 170.7058
@@ -481,6 +559,7 @@ function OSPropEGUI()
             funcgroups[:, 2],
             )
             push!(listPropHukkerikar, ("Fp (K)", Fp))
+            push!(PropHuk, ("Fp", Fp))
 
             # Enthalpy of vaporization (298 K) [kJ/mol]
             Hv0 = 10.4327
@@ -495,6 +574,7 @@ function OSPropEGUI()
             funcgroups[:, 2],
             )
             push!(listPropHukkerikar, ("Hv[298 K] (kJ/mol)", Hv))
+            push!(PropHuk, ("Hv[298 K]", Hv))
 
             # Enthalpy of vaporization (Tb) [kJ/mol]
             Hvb0 = 15.4199
@@ -509,6 +589,7 @@ function OSPropEGUI()
             funcgroups[:, 2],
             )
             push!(listPropHukkerikar, ("Hv[Tb] (kJ/mol)", Hvb))
+            push!(PropHuk, ("Hv[Tb]", Hvb))
 
             # Entropy of vaporization (Tb) [J/mol K]
             Svb0 = 83.3097
@@ -523,6 +604,7 @@ function OSPropEGUI()
             funcgroups[:, 2],
             )
             push!(listPropHukkerikar, ("Sv[Tb] (J/mol K)", Svb))
+            push!(PropHuk, ("Sv[Tb]", Svb))
 
             # Hildebrand solubility parameter [MPa^(1/2)]
             δ0 = 21.6654
@@ -537,6 +619,7 @@ function OSPropEGUI()
             )
             )
             push!(listPropHukkerikar, ("δ (MPa^(0.5))", δ))
+            push!(PropHuk, ("D", δ))
 
             # Hansen solubility parameter [MPa^(1/2)]
             δ0 = 21.6654
@@ -551,6 +634,7 @@ function OSPropEGUI()
             )
             )
             push!(listPropHukkerikar, ("δD (MPa^(0.5))", δD))
+            push!(PropHuk, ("DD", δD))
 
             δP =
             δ0 + (
@@ -563,6 +647,7 @@ function OSPropEGUI()
             )
             )
             push!(listPropHukkerikar, ("δP (MPa^(0.5))", δP))
+            push!(PropHuk, ("DP", δP))
 
             δH =
             δ0 + (
@@ -575,6 +660,7 @@ function OSPropEGUI()
             )
             )
             push!(listPropHukkerikar, ("δH (MPa^(0.5))", δH))
+            push!(PropHuk, ("DH", δH))
 
             # Acentric factor
             ωa = 0.9080
@@ -595,6 +681,7 @@ function OSPropEGUI()
             )^(1 / ωb),
             )
             push!(listPropHukkerikar, ("ω", ω))
+            push!(PropHuk, ("Acentric Factor", ω))
 
             # Liquid molar volume [cc/kmol]
             Vm0 = 0.0160
@@ -609,13 +696,184 @@ function OSPropEGUI()
             funcgroups[:, 2],
             )
             Vm = 1000 * Vm
-            push!(listPropHukkerikar, ("Wm (cc/mol)", Vm))
+            push!(listPropHukkerikar, ("Vm (cc/mol)", Vm))
+            push!(PropHuk, ("Vm", Vm))
+
+            ####################################################################
+            # Joback
+
+            set_gtk_property!(imgAtomIndexJ, :file, filename_out2)
+            # Functional Groups Analysis
+            fgJoback = MG.functionalgroupgraph(mol, "Joback")
+
+            funcgroupsJoback = DF.DataFrame(Group = String[], Times = Int[], Sets = String[])
+
+            for (term, components) in fgJoback.componentmap
+                nodes = [sort(collect(comp)) for comp in components]
+                push!(
+                funcgroupsJoback,
+                (string(term), length(collect(nodes)), string(nodes...)),
+                )
+            end
+
+            # Size for list for Joback
+            rowsJ = size(JobackDatabase)[1]
+            rowsFGJoback = size(funcgroupsJoback)[1]
+            countsJoback = Array{Int64}(undef, rowsJ, rowsFGJoback)
+
+            # Extracting equalities for Joback
+            FGJoback = DF.DataFrame(Group = String[], Times = Int[], Sets = String[])
+
+            for i=1:rowsJ
+                for j=1:rowsFGJoback
+                    countsJoback[i,j] = convert(Int64, funcgroupsJoback[j,1] == JobackDatabase[i,1])
+
+                    if countsJoback[i,j] == 1
+                        push!(FGJoback, (funcgroupsJoback[j,1], funcgroupsJoback[j,2], funcgroupsJoback[j,3]))
+                    end
+                end
+            end
+
+            setsJoback = FGJoback[:,3]
+            sizeSetsJoback = length(setsJoback)
+
+            setss = []
+            for i=1:sizeSetsJoback
+                if length(setsJoback[i]) == 3
+                    push!(setss, (setsJoback[i], i))
+                end
+            end
+
+            test = zeros(length(setss),sizeSetsJoback)
+            for i=1:length(setss)
+                for j=1:sizeSetsJoback
+                    testu = findfirst(isequal(setss[i][1][2]), setsJoback[j])
+                    if isnothing(testu)
+                        test[i,j] = 0
+                    else
+                        if setss[i][1] == setsJoback[j]
+                            test[i,j] = 0
+                        else
+                            test[i,j] = 1
+                        end
+                    end
+                end
+            end
+
+            setdelete = []
+            for i=1:length(setss)
+                a = test[i,:]*setss[:][i][2]
+                if sum(a) != 0
+                    DF.delete!(FGJoback, Int64(sum(a)))
+                end
+            end
+
+            # Size for list for Joback
+            rowsJNew = size(JobackDatabase)[1]
+            rowsFGJobackNew = size(FGJoback)[1]
+            countsJobackNew = Array{Int64}(undef, rowsJ, rowsFGJobackNew)
+
+            # Extracting equalities for Joback
+            FGJobackNew = DF.DataFrame(Group = String[], Times = Int[], Sets = String[])
+
+            for i=1:rowsJNew
+                for j=1:rowsFGJobackNew
+                    countsJobackNew[i,j] = convert(Int64, FGJoback[j,1] == JobackDatabase[i,1])
+
+                    if countsJobackNew[i,j] == 1
+                        push!(FGJobackNew, (FGJoback[j,1], FGJoback[j,2], FGJoback[j,3]))
+                    end
+                end
+            end
+
+            for i = 1:size(FGJobackNew)[1]
+                push!(
+                listFGJoback,
+                (FGJobackNew[i, 1], FGJobackNew[i, 2], FGJobackNew[i, 3]),
+                )
+            end
+
+            # Property calculations
+            # Molecular weigth
+            Mw = MG.standardweight(mol)[1]
+
+            # Normal boiling point
+            Tbi = sum((countsJobackNew[:,:] .* JobackDatabase[:,5])*FGJobackNew[:,2])
+            Tb = 198.2 + Tbi
+
+            # Melting point
+            Tmi = sum((countsJobackNew[:,:] .* JobackDatabase[:,6])*FGJobackNew[:,2])
+            Tm = 122.5 + Tmi
+
+            # Critical Temperature
+            Tci = sum((countsJobackNew[:,:] .* JobackDatabase[:,2])*FGJobackNew[:,2])
+            Tc = Tb*(0.584 + 0.965*Tci - (Tci)^2)^(-1)
+
+            # Critical pressure
+            numAtoms = MG.countatoms(mol)
+            akeys = keys(numAtoms)
+
+            Na = 0
+            for i in akeys
+                Na = Na + numAtoms[i]
+            end
+            Pci = sum((countsJobackNew[:,:] .* JobackDatabase[:,3])*FGJobackNew[:,2])
+            Pc = (0.113 + 0.0032*Na - Pci)^(-2)
+
+            # Critical volume
+            Vci = sum((countsJobackNew[:,:] .* JobackDatabase[:,4])*FGJobackNew[:,2])
+            Vc = 17.5 + Vci
+
+            # Heat of formation (ideal gas, 298 K)
+            Hformi = sum((countsJobackNew[:,:] .* JobackDatabase[:,7])*FGJobackNew[:,2])
+            Hform = 68.29 + Hformi
+
+            # Gibbs energy of formation (ideal gas, 298 K)
+            Gformi = sum((countsJobackNew[:,:] .* JobackDatabase[:,8])*FGJobackNew[:,2])
+            Gform = 53.88 + Gformi
+
+            # Heat capacity (ideal gas)
+            T = 298
+            ai = sum((countsJobackNew[:,:] .* JobackDatabase[:,9])*FGJobackNew[:,2])
+            bi = sum((countsJobackNew[:,:] .* JobackDatabase[:,10])*FGJobackNew[:,2])
+            ci = sum((countsJobackNew[:,:] .* JobackDatabase[:,11])*FGJobackNew[:,2])
+            di = sum((countsJobackNew[:,:] .* JobackDatabase[:,12])*FGJobackNew[:,2])
+            Cp = ai - 37.93 + (bi + 0.210)*T + (ci - 3.91e-4)*T^2 + (di + 2.06e-7)*T^3
+
+            # Heat of vaporization at normal boiling point
+            Hvapi = sum((countsJobackNew[:,:] .* JobackDatabase[:,14])*FGJobackNew[:,2])
+            ΔHvap = 15.30 + Hvapi
+
+            # Heat of fusion
+            Hfusi = sum((countsJobackNew[:,:] .* JobackDatabase[:,13])*FGJobackNew[:,2])
+            ΔHfus = -0.88 + Hfusi
+
+            # Liquid dynamic viscosity
+            ŋa = sum((countsJobackNew[:,:] .* JobackDatabase[:,15])*FGJobackNew[:,2])
+            ŋb = sum((countsJobackNew[:,:] .* JobackDatabase[:,16])*FGJobackNew[:,2])
+
+            ŋL = Mw*exp(((ŋa - 597.82)/T) + ŋb - 11.202)
+
+            # Print
+            push!(listPropJoback, ("Mw (g/mol)", Mw))
+            push!(listPropJoback, ("Tb (K)", Tb))
+            push!(listPropJoback, ("Tm (K)", Tm))
+            push!(listPropJoback, ("Tc (K)", Tc))
+            push!(listPropJoback, ("Pc (bar)", Pc))
+            push!(listPropJoback, ("Vc (cc/mol)", Vc))
+            push!(listPropJoback, ("Hform (kJ/mol)", Hform))
+            push!(listPropJoback, ("Gform (kJ/mol)", Gform))
+            push!(listPropJoback, ("Cp (J/mol K)", Cp))
+            push!(listPropJoback, ("ΔHvap (kJ/mol)", ΔHvap))
+            push!(listPropJoback, ("ΔHfus (kJ/mol)", ΔHfus))
+            push!(listPropJoback, ("ŋL (Pa s)", ŋL))
 
             set_gtk_property!(tb2, :sensitive, true)
+            ####################################################################
         catch
             Nothing
         end
-        set_gtk_property!(nb, :page, 1)
+        set_gtk_property!(nb, :page, 2)
     end
 
     # Toolbar
@@ -996,10 +1254,127 @@ function OSPropEGUI()
 
     push!(nbResFrame0, gHukkerikar)
 
-    # Joback & Reid
+    # Joback & Reid #################################################
     nbResFrame1 = Frame()
     screen = Gtk.GAccessor.style_context(nbResFrame1)
     push!(screen, StyleProvider(provider), 600)
+
+    gJoback = Grid()
+    set_gtk_property!(gJoback, :margin_top, 20)
+    set_gtk_property!(gJoback, :margin_bottom, 20)
+    set_gtk_property!(gJoback, :margin_left, 20)
+    set_gtk_property!(gJoback, :margin_right, 20)
+    set_gtk_property!(gJoback, :valign, 3)
+    set_gtk_property!(gJoback, :halign, 3)
+    set_gtk_property!(gJoback, :column_spacing, 20)
+    set_gtk_property!(gJoback, :row_spacing, 20)
+
+    molFrameJoback = Frame("Molecule")
+    set_gtk_property!(molFrameJoback, :label_xalign, 0.50)
+    set_gtk_property!(molFrameJoback, :height_request, round(h * 0.28))
+    set_gtk_property!(molFrameJoback, :width_request, round(h * 0.32))
+    screen = Gtk.GAccessor.style_context(molFrameJoback)
+    push!(screen, StyleProvider(provider), 600)
+
+    imgAtomIndexJ = Gtk.Image()
+
+    push!(molFrameJoback, imgAtomIndexJ)
+
+    # Notebook for FG
+    global nbFGJoback = Notebook()
+    set_gtk_property!(nbFGJoback, :tab_pos, 2)
+    set_gtk_property!(nbFGJoback, :name, "nbFGJoback")
+
+    FGJoback = Frame()
+    set_gtk_property!(FGJoback, :label_xalign, 0.50)
+    set_gtk_property!(FGJoback, :height_request, round(h * 0.28))
+    set_gtk_property!(FGJoback, :width_request, round(h * 0.32))
+    screen = Gtk.GAccessor.style_context(FGJoback)
+    push!(screen, StyleProvider(provider), 600)
+
+    push!(nbFGJoback, FGJoback, "General Groups")
+
+
+    global fgFrameJoback = Frame("Functional Groups")
+    set_gtk_property!(fgFrameJoback, :label_xalign, 0.50)
+    set_gtk_property!(fgFrameJoback, :height_request, round(h * 0.28))
+    set_gtk_property!(fgFrameJoback, :width_request, round(h * 0.32))
+    screen = Gtk.GAccessor.style_context(fgFrameJoback)
+    push!(screen, StyleProvider(provider), 600)
+
+    ##################################################33333
+    # First order fgFrameHukkerikar
+    # GtkListStore where the data is actually saved
+    global listFGJoback = ListStore(String, Int64, String)
+
+    # Gtk TreeView to show the graphical element
+    global viewFGJoback = TreeView(TreeModel(listFGJoback))
+    set_gtk_property!(viewFGJoback, :enable_grid_lines, 3)
+    set_gtk_property!(viewFGJoback, :enable_search, true)
+
+    # Window that allow scroll the TreeView
+    scrollFGJoback = ScrolledWindow(viewFGJoback)
+    #set_gtk_property!(scrollFG, :width_request, 750)
+    #set_gtk_property!(scrollFG, :height_request, 250)
+    selection1 = Gtk.GAccessor.selection(viewFGJoback)
+
+    # Column definitions
+    cTxt1 = CellRendererText()
+
+    c11 = TreeViewColumn("FG", cTxt1, Dict([("text", 0)]))
+    c12 = TreeViewColumn("Count", cTxt1, Dict([("text", 1)]))
+    c13 = TreeViewColumn("Index", cTxt1, Dict([("text", 2)]))
+
+    # Add column to TreeView
+    push!(viewFGJoback, c11, c12, c13)
+
+    #push!(fgFrameHukkerikar, scrollFGHukkerikar)
+    push!(FGJoback, scrollFGJoback)
+
+
+    ###########################################################################
+
+    propFrameJoback = Frame("Properties Estimated")
+    set_gtk_property!(propFrameJoback, :label_xalign, 0.50)
+    set_gtk_property!(propFrameJoback, :height_request, round(h * 0.20))
+    set_gtk_property!(propFrameJoback, :width_request, round(h * 0.32))
+    screen = Gtk.GAccessor.style_context(propFrameJoback)
+    push!(screen, StyleProvider(provider), 600)
+
+
+    ##################################################33333
+    # Properties fgFrameHukkerikar
+    # GtkListStore where the data is actually saved
+    global listPropJoback = ListStore(String, Float64)
+
+    # Gtk TreeView to show the graphical element
+    global viewPropJoback = TreeView(TreeModel(listPropJoback))
+    set_gtk_property!(viewPropJoback, :enable_grid_lines, 3)
+    set_gtk_property!(viewPropJoback, :enable_search, true)
+
+    # Window that allow scroll the TreeView
+    scrollPropJoback = ScrolledWindow(viewPropJoback)
+    #set_gtk_property!(scrollFG, :width_request, 750)
+    #set_gtk_property!(scrollFG, :height_request, 250)
+    selection1 = Gtk.GAccessor.selection(viewPropJoback)
+
+    # Column definitions
+    cTxt1 = CellRendererText()
+
+    c11 = TreeViewColumn("Property", cTxt1, Dict([("text", 0)]))
+    c12 = TreeViewColumn("Value", cTxt1, Dict([("text", 1)]))
+
+    # Add column to TreeView
+    push!(viewPropJoback, c11, c12)
+
+    #push!(fgFrameHukkerikar, scrollFGHukkerikar)
+    push!(propFrameJoback, scrollPropJoback)
+
+    gJoback[1, 1] = molFrameJoback
+    gJoback[2, 1:2] = nbFGJoback
+    gJoback[1, 2] = propFrameJoback
+
+    push!(nbResFrame1, gJoback)
 
     # Sánchez & Jímenez
     nbResFrame2 = Frame()
