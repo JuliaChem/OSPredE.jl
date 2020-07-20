@@ -1,98 +1,18 @@
 /* CSS Style for generic buttons*/
-button {
-	box-shadow:inset 0px 1px 0px 0px #54a3f7;
-	background:linear-gradient(to bottom, #007dc1 5%, #0061a7 100%);
-	background-color:#007dc1;
-	border-radius:6px;
-	border:1px solid #124d77;
-	color:#ffffff;
-	font-family:Arial;
-	font-size:19px;
-	font-weight:bold;
-	padding:6px 24px;
-	text-decoration:none;
-	text-shadow:0px 1px 0px #154682;
-	border-top-left-radius: 6px;
-	border-top-right-radius: 6px;
-	border-bottom-left-radius: 6px;
-	border-bottom-right-radius: 6px;
-}
 
-/* CSS Style for specific buttons*/
-button#runsmiles {
-	box-shadow:inset 0px 1px 0px 0px #54a3f7;
-	background:linear-gradient(to bottom, #007dc1 5%, #0061a7 100%);
-	background-color:#007dc1;
-	border-radius:6px;
-	border:0px solid #124d77;
-	color:#ffffff;
-	font-family:Arial;
-	font-size:15px;
-	font-weight:bold;
-	padding:0px 0px;
-	text-decoration:none;
-	text-shadow:0px 1px 0px #154682;
-	border-top-left-radius: 6px;
-	border-top-right-radius: 6px;
-	border-bottom-left-radius: 6px;
-	border-bottom-right-radius: 6px;
-}
-
-/* CSS Style for hover specific buttons*/
-button:hover#runsmiles {
-	background:linear-gradient(to bottom, #0061a7 5%, #007dc1 100%);
-	background-color:#0061a7;
-}
 
 /* CSS Style for windows*/
-window {
-	background-color: white;
-}
-
-/* CSS Style for labels*/
-label {
-	font: 12px Serif;
-	color: #2c2d2c;
-}
-
-label#nameUser, label#simName, label#dirName, label#compName, label#dateName {
-	font: 14px Serif;
-	border: 1px solid gray;
-	color: black;
-}
-
-label#notesName {
-	font: 14px Serif;
-	border: 1px solid gray;
-	color: black;
+window#mainWin {
+	background-color: blue;
 }
 
 /* CSS Style for notebook headers tabs*/
-notebook#nbRes {
-	border-width: 0px;
-}
-
 notebook#nb {
 	border-width: 0px;
+	background-color: blue;
 }
 
 notebook#nb header tabs tab {
-	box-shadow: 0px 0px;
-	font-size: 15px;
-	font-weight: bold;
-	color: white;
-	background:linear-gradient(to bottom, #007dc1 5%, #0061a7 100%);
-	background-color:#007dc1;
-	border-width: 0px;
-	border-style: solid;
-	border-color: black;
-	border-top-left-radius: 10px;
-	border-top-right-radius: 0px;
-	border-bottom-left-radius: 10px;
-	border-bottom-right-radius: 0px;
-}
-
-notebook#nbRes header tabs tab {
 	box-shadow: 0px 0px;
 	font-size: 12px;
 	font-weight: bold;
@@ -123,21 +43,6 @@ notebook#nb header tabs tab:checked {
 	border-right-color: black;
 }
 
-/* CSS Style for notebook headers tabs after pressed*/
-notebook#nbRes header tabs tab:checked {
-	font-size: 12px;
-	font-weight: bold;
-	color: white;
-	background:linear-gradient(to bottom, #d0451b 5%, #bc3315 100%);
-	background-color:#d0451b;
-	border-width: 0px;
-	border-top-left-radius: 0px;
-	border-top-right-radius: 0px;
-	border-bottom-left-radius: 10px;
-	border-bottom-right-radius: 10px;
-	border-right-color: black;
-}
-
 /* CSS Style for notebook headers tabs on hover*/
 notebook#nb header tabs tab:hover {
 	font-size: 15px;
@@ -150,38 +55,4 @@ notebook#nb header tabs tab:hover {
 	border-top-right-radius: 0px;
 	border-bottom-left-radius: 10px;
 	border-bottom-right-radius: 0px;
-}
-
-notebook#nbRes header tabs tab:hover {
-	font-size: 12px;
-	font-weight: bold;
-	color: white;
-	background:linear-gradient(to bottom, #0061a7 5%, #007dc1 100%);
-	background-color:#0061a7;
-	border-width: 0px;
-	border-top-left-radius: 0px;
-	border-top-right-radius: 0px;
-	border-bottom-left-radius: 10px;
-	border-bottom-right-radius: 10px;
-}
-
-/* CSS Style for notebook frames in tabs*/
-frame {
-	border-color: grey;
-	background-color: white;
-	border-width: 0px;
-	border-style: solid;
-}
-
-frame#frameLogging, frame#smileFrame {
-	border-color: grey;
-	border-width: 0.5px;
-	background-color: white;
-	border-style: solid;
-}
-
-scrolledwindow {
-	background-color: rgb(235, 235, 235);
-	border-color: gray;
-	border-width: 1px;
 }
