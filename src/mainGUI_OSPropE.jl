@@ -51,10 +51,10 @@ end
 if Sys.islinux()
     global pathPUREDIPPR =
         joinpath(dirname(Base.source_path()), "database/PUREDIPPR.csv")
-    global filename_in = "/temp/molsvg.svg"
-    global filename_out = "/temp/molpng.png"
-    global filename_in2 = "/temp/molsvg2.svg"
-    global filename_out2 = "/temp/molpng2.png"
+    global filename_in = "/tmp/molsvg.svg"
+    global filename_out = "/tmp/molpng.png"
+    global filename_in2 = "/tmp/molsvg2.svg"
+    global filename_out2 = "/tmp/molpng2.png"
 
     # MG Database for functional groups
     global MG_FirstOrder_Method1 =
