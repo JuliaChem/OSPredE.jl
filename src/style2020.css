@@ -3,18 +3,18 @@
 
 /* CSS Style for windows*/
 window#mainWin {
-	background-color: blue;
+	background-color: white;
 }
 
 /* CSS Style for notebook headers tabs*/
 notebook#nb {
 	border-width: 0px;
-	background-color: blue;
+	background-color: white;
 }
 
 notebook#nb header tabs tab {
 	box-shadow: 0px 0px;
-	font-size: 12px;
+	font-size: 14px;
 	font-weight: bold;
 	color: white;
 	background:linear-gradient(to bottom, #007dc1 5%, #0061a7 100%);
@@ -29,7 +29,7 @@ notebook#nb header tabs tab {
 
 /* CSS Style for notebook headers tabs after pressed*/
 notebook#nb header tabs tab:checked {
-	font-size: 15px;
+	font-size: 14px;
 	font-weight: bold;
 	color: white;
 	background:linear-gradient(to bottom, #d0451b 5%, #bc3315 100%);
@@ -45,7 +45,7 @@ notebook#nb header tabs tab:checked {
 
 /* CSS Style for notebook headers tabs on hover*/
 notebook#nb header tabs tab:hover {
-	font-size: 15px;
+	font-size: 14px;
 	font-weight: bold;
 	color: white;
 	background:linear-gradient(to bottom, #0061a7 5%, #007dc1 100%);
