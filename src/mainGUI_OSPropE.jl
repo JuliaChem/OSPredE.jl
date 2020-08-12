@@ -304,6 +304,17 @@ function OSPropEGUI()
         global MG_ThirdOrder_Method1
         global JobackDatabase
 
+        # Clear to avoid duplicate
+        empty!(listFGHukkerikar1)
+        empty!(listFGHukkerikar2)
+        empty!(listFGHukkerikar3)
+        empty!(listFGJoback)
+        empty!(listPropJoback)
+        empty!(listPropHukkerikar)
+        empty!(imgSVG)
+        empty!(imgAtomIndex)
+        empty!(imgAtomIndexJ)
+        
         ########################################################################
         # Hukkerikar
         try
