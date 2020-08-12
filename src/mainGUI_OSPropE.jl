@@ -129,11 +129,12 @@ function OSPropEGUI()
         empty!(listFGHukkerikar1)
         empty!(listFGHukkerikar2)
         empty!(listFGHukkerikar3)
+        empty!(listFGJoback)
         empty!(listPropJoback)
         empty!(listPropHukkerikar)
         empty!(imgSVG)
         empty!(imgAtomIndex)
-        empty!(imgAtomIndex)
+        empty!(imgAtomIndexJ)
         set_gtk_property!(nb, :page, 0)
     end
 
