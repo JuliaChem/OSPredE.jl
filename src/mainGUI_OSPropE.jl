@@ -77,13 +77,13 @@ if Sys.islinux()
 end
 
 # Loading functional groups
-MG_FirstOrder_Method1 = CSV.read(MG_FirstOrder_Method1, header=false);
-MG_SecondOrder_Method1 = CSV.read(MG_SecondOrder_Method1, header=false);
-MG_ThirdOrder_Method1 = CSV.read(MG_ThirdOrder_Method1, header=false);
-JobackDatabase = CSV.read(Joback_Database, header=false);
+MG_FirstOrder_Method1 = CSV.read(MG_FirstOrder_Method1, header=false, DF.DataFrame);
+MG_SecondOrder_Method1 = CSV.read(MG_SecondOrder_Method1, header=false, DF.DataFrame);
+MG_ThirdOrder_Method1 = CSV.read(MG_ThirdOrder_Method1, header=false, DF.DataFrame);
+JobackDatabase = CSV.read(Joback_Database, header=false, DF.DataFrame);
 
 # Load default database
-databaseDIPPR = CSV.read(pathPUREDIPPR)
+databaseDIPPR = CSV.read(pathPUREDIPPR, DF.DataFrame)
 
 # Main function
 function OSPropEGUI()
@@ -314,7 +314,7 @@ function OSPropEGUI()
         empty!(imgSVG)
         empty!(imgAtomIndex)
         empty!(imgAtomIndexJ)
-        
+
         ########################################################################
         # Hukkerikar
         try
