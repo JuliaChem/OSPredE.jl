@@ -22,8 +22,8 @@ notebook#nb header tabs tab {
 	border-width: 0px;
 	border-top-left-radius: 10px;
 	border-top-right-radius: 10px;
-	border-bottom-left-radius: 0px;
-	border-bottom-right-radius: 0px;
+	border-bottom-left-radius: 10px;
+	border-bottom-right-radius: 10px;
 	border-right-color: black;
 }
 
@@ -37,8 +37,8 @@ notebook#nb header tabs tab:checked {
 	border-width: 0px;
 	border-top-left-radius: 10px;
 	border-top-right-radius: 10px;
-	border-bottom-left-radius: 0px;
-	border-bottom-right-radius: 0px;
+	border-bottom-left-radius: 10px;
+	border-bottom-right-radius: 10px;
 	border-right-width: 0px;
 	border-right-color: black;
 }
@@ -53,6 +53,6 @@ notebook#nb header tabs tab:hover {
 	border-width: 0px;
 	border-top-left-radius: 10px;
 	border-top-right-radius: 10px;
-	border-bottom-left-radius: 0px;
-	border-bottom-right-radius: 0px;
+	border-bottom-left-radius: 10px;
+	border-bottom-right-radius: 10px;
 }
